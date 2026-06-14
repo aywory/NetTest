@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetQuiz — Компьютерные сети</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── HEADER ──────────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="logo">NET<span>QUIZ</span> <span style="font-size:.75rem;color:var(--text-dim)">// Компьютерные сети</span></div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!--  START SCREEN                                                      -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="screen active" id="start-screen">
+    <div class="start-hero">
+      <h1>Готов к<br><em>экзамену</em>?</h1>
+      <p>Вопросы перемешиваются каждый раз. Назад дороги нет.</p>
+
+      <div class="start-meta">
+        <div class="meta-chip">Вопросов: <strong id="q-total">—</strong></div>
+        <div class="meta-chip">Типов заданий: <strong>8</strong></div>
+        <div class="meta-chip">Порог «5»: <strong>91%</strong></div>
+      </div>
+
+      <label class="start-toggle">
+        <input type="checkbox" id="show-hints">
+        <span class="toggle-box" aria-hidden="true"></span>
+        <span>Показывать подсказки из вопросов</span>
+      </label>
+
+      <button class="btn-primary" onclick="startQuiz()">
+        ▶&nbsp; Начать тест
+      </button>
+    </div>
+
+    <!-- History -->
+    <div class="history-header">
+      <div class="section-title">История сессий</div>
+      <button class="btn-ghost" onclick="clearHistory()">Очистить</button>
+    </div>
+    <div id="history-table"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!--  QUIZ SCREEN                                                        -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="screen" id="quiz-screen">
+
+    <!-- sticky progress -->
+    <div class="progress-wrapper">
+      <div class="progress-meta">
+        <span id="progress-label">0 / 0</span>
+        <span id="timer-display" style="color:var(--text-dim);font-family:var(--mono)"></span>
+      </div>
+      <div id="progress-bar"></div>
+    </div>
+
+    <div class="quiz-body">
+      <div class="question-header">
+        <div id="topic-badge">—</div>
+        <div id="q-counter">Вопрос 1 из ?</div>
+      </div>
+
+      <div id="question-container"></div>
+
+      <div class="next-wrapper">
+        <button class="btn-primary" id="btn-next" onclick="nextQuestion()">
+          Следующий →
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!--  RESULT SCREEN                                                      -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="screen" id="result-screen">
+
+    <div class="result-header">
+      <h2>Тест завершён</h2>
+      <div id="res-score" class="score-display">—</div>
+      <div id="res-comment"></div>
+    </div>
+
+    <div class="result-stats">
+      <div class="stat-card">
+        <div class="stat-val" id="res-correct">—</div>
+        <div class="stat-lbl">Правильных ответов</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="res-percent">—</div>
+        <div class="stat-lbl">Процент верных</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="res-time">—</div>
+        <div class="stat-lbl">Время прохождения</div>
+      </div>
+    </div>
+
+    <!-- result progress bar -->
+    <div class="section-title">Карта ответов</div>
+    <div id="result-progress"></div>
+
+    <!-- topic breakdown -->
+    <div class="section-title">По темам</div>
+    <div id="res-topics"></div>
+
+    <!-- history -->
+    <div class="history-header" style="margin-top:2rem">
+      <div class="section-title" style="margin:0">История</div>
+      <button class="btn-ghost" onclick="clearHistory()">Очистить</button>
+    </div>
+    <div id="history-table"></div>
+
+    <div class="result-actions">
+      <button class="btn-primary" onclick="startQuiz()">▶ Пройти снова</button>
+      <button class="btn-ghost"   onclick="showScreen('start-screen')">На главную</button>
+    </div>
+
+  </div>
+
+  <!-- ── TOAST ────────────────────────────────────────────────────────── -->
+  <div id="toast"></div>
+
+  <!-- ── SCRIPTS ──────────────────────────────────────────────────────── -->
+  <script src="renderers/single_choice.js"></script>
+  <script src="renderers/multi_choice.js"></script>
+  <script src="renderers/matching.js"></script>
+  <script src="renderers/ordering.js"></script>
+  <script src="renderers/text_types.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
