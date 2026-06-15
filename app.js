@@ -293,7 +293,7 @@ function beginExamTask() {
   startSubnetTask({ examMode: true });
 }
 
-function finishExamFromTask(taskPoints) {
+function finishExamFromTask(taskPoints, taskReview = null) {
   if (!examSession || examSession.saved) return null;
 
   const singleCorrect = results.slice(0, examSession.singleCount).filter(Boolean).length;
@@ -319,6 +319,7 @@ function finishExamFromTask(taskPoints) {
     multiScore,
     quizScore,
     taskPoints,
+    taskReview,
     totalPoints,
     score,
     elapsed,
@@ -365,6 +366,8 @@ function showExamResultScreen() {
     </div>`;
   }).join('');
 
+  renderExamTaskReview(final.taskReview);
+
   const resSeg = document.getElementById('result-progress');
   resSeg.innerHTML = [
     ...results.map(r => `<div class="progress-seg ${r ? 'seg-correct' : 'seg-wrong'}"></div>`),
@@ -373,6 +376,39 @@ function showExamResultScreen() {
 
   renderHistoryTable();
   showScreen('result-screen');
+}
+
+function renderExamTaskReview(review) {
+  const el = document.getElementById('res-task-review');
+  if (!el) return;
+
+  if (!review) {
+    el.innerHTML = '';
+    return;
+  }
+
+  const messagesHtml = review.messages?.length
+    ? `<ul>${review.messages.map(msg => `<li>${msg}</li>`).join('')}</ul>`
+    : '<p>Ошибок в задаче нет.</p>';
+
+  el.innerHTML = `
+    <div class="section-title">Разбор задачи</div>
+    <div class="exam-task-review">
+      <div class="task-total-score">${review.total} / ${review.max}</div>
+      <div class="task-score">
+        ${review.breakdown.map(item => `
+          <div class="task-score-item">
+            <strong>${item.score}/${item.max}</strong>
+            <span>${item.label}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="task-feedback show ${review.messages?.length ? 'bad' : 'ok'}">
+        ${messagesHtml}
+      </div>
+      ${review.solutionHtml || ''}
+    </div>
+  `;
 }
 
 function saveInterruptedExamSession() {
@@ -634,6 +670,8 @@ function showResults() {
   document.getElementById('res-correct').textContent     = `${correct} / ${total}`;
   document.getElementById('res-time').textContent        = timeStr;
   document.getElementById('res-percent').textContent     = `${Math.round(correct/total*100)}%`;
+  const taskReviewEl = document.getElementById('res-task-review');
+  if (taskReviewEl) taskReviewEl.innerHTML = '';
 
   // Topic breakdown
   const topicEl = document.getElementById('res-topics');

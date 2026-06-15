@@ -589,7 +589,7 @@ function renderRouteStage() {
 }
 
 function renderFinalStage() {
-  const buttonText = subnetTask.examMode ? 'Проверить задачу и завершить экзамен' : 'Проверить всю задачу';
+  const buttonText = subnetTask.examMode ? 'Завершить экзамен' : 'Проверить всю задачу';
   return `
     <div class="task-card">
       <h3>7. Итоговая проверка</h3>
@@ -820,6 +820,36 @@ function checkSubnetTaskFinal() {
     ...messagesForFinal('Аккуратность', clean)
   ];
 
+  const review = {
+    total,
+    max: 20,
+    breakdown: [
+      { label: 'Маски', score: masks.score, max: masks.max },
+      { label: 'Подсети', score: subnets.score, max: subnets.max },
+      { label: 'IP', score: ips.score, max: ips.max },
+      { label: 'Шлюзы', score: gateways.score, max: gateways.max },
+      { label: 'Маршруты', score: routes.score, max: routes.max },
+      { label: 'Аккуратность', score: clean.score, max: clean.max }
+    ],
+    messages: allMessages,
+    solutionHtml: renderSubnetSolution()
+  };
+
+  if (subnetTask.examMode && typeof finishExamFromTask === 'function') {
+    if (subnetTask.saved) {
+      if (typeof showExamResultScreen === 'function') showExamResultScreen();
+      return;
+    }
+
+    const examFinal = finishExamFromTask(total, review);
+    subnetTask.saved = true;
+    subnetTask.dirty = false;
+    if (examFinal && typeof showExamResultScreen === 'function') {
+      showExamResultScreen();
+    }
+    return;
+  }
+
   const html = `
     <div class="task-total-score">${total} / 20</div>
     <div class="task-score">
@@ -839,19 +869,7 @@ function checkSubnetTaskFinal() {
   finalEl.innerHTML = html;
 
   if (!subnetTask.saved) {
-    if (subnetTask.examMode && typeof finishExamFromTask === 'function') {
-      const examFinal = finishExamFromTask(total);
-      if (examFinal) {
-        finalEl.innerHTML += `
-          <div class="task-actions">
-            <button class="btn-primary" type="button" onclick="showExamResultScreen()">Показать итог экзамена</button>
-            <span class="task-mini-value">${examFinal.totalPoints} / 100 баллов</span>
-          </div>
-        `;
-      }
-    } else {
-      saveSubnetTaskResult(total);
-    }
+    saveSubnetTaskResult(total);
     subnetTask.saved = true;
     subnetTask.dirty = false;
   }

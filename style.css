@@ -767,6 +767,18 @@ body::before {
 .topic-mid  .topic-name { color: var(--yellow); }
 .topic-bad  .topic-name { color: var(--red); }
 
+.exam-task-review {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  padding: 1rem;
+  margin-top: .75rem;
+}
+
+.exam-task-review .task-card {
+  margin-top: 1rem;
+}
+
 /* ── RESULT PROGRESS ──────────────────────────────────────────────────── */
 #result-progress {
   display: flex;
