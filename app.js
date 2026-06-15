@@ -8,8 +8,27 @@ let results   = [];   // true/false per question
 let startTime = null;
 let answered  = false;
 let showHints = false;
+let currentMode = 'full';
 const STORAGE_KEY = 'net_quiz_sessions';
 const ACTIVE_STORAGE_KEY = 'net_quiz_active_session';
+
+const TEST_MODES = {
+  full: {
+    title: 'Полный банк',
+    description: 'Все вопросы: лабораторные и термины',
+    filter: () => true
+  },
+  labs: {
+    title: 'Лабы 1-8',
+    description: 'Практика по пройденным лабораторным',
+    filter: q => q.topic !== 'Термины и определения'
+  },
+  terms: {
+    title: 'Термины',
+    description: 'Определения, уровни, протоколы, устройства',
+    filter: q => q.topic === 'Термины и определения'
+  }
+};
 
 // ══════════════════════════════════════════════════════════════
 //  BOOT
@@ -18,8 +37,7 @@ async function init() {
   try {
     const res = await fetch('questions.json');
     questions = await res.json();
-    const totalEl = document.getElementById('q-total');
-    if (totalEl) totalEl.textContent = questions.length;
+    updateModeStats();
     renderHistoryTable();
     if (!restoreActiveSession()) {
       showScreen('start-screen');
@@ -41,8 +59,15 @@ function showScreen(id) {
 // ══════════════════════════════════════════════════════════════
 //  QUIZ START
 // ══════════════════════════════════════════════════════════════
-function startQuiz() {
-  shuffled  = shuffle([...questions]).map(prepareQuestionForSession);
+function startQuiz(modeId = currentMode) {
+  currentMode = TEST_MODES[modeId] ? modeId : 'full';
+  const pool = getModeQuestions(currentMode);
+  if (!pool.length) {
+    showToast('В этом режиме пока нет вопросов');
+    return;
+  }
+
+  shuffled  = shuffle([...pool]).map(prepareQuestionForSession);
   current   = 0;
   results   = [];
   startTime = Date.now();
@@ -53,6 +78,30 @@ function startQuiz() {
   saveActiveSession();
   showScreen('quiz-screen');
   renderQuestion();
+}
+
+function getModeQuestions(modeId) {
+  const mode = TEST_MODES[modeId] || TEST_MODES.full;
+  return questions.filter(mode.filter);
+}
+
+function selectMode(modeId) {
+  if (!TEST_MODES[modeId]) return;
+  currentMode = modeId;
+  document.querySelectorAll('.mode-card').forEach(card => {
+    card.classList.toggle('active', card.dataset.mode === modeId);
+  });
+  updateModeStats();
+}
+
+function updateModeStats() {
+  Object.keys(TEST_MODES).forEach(modeId => {
+    const el = document.getElementById(`mode-count-${modeId}`);
+    if (el) el.textContent = getModeQuestions(modeId).length;
+  });
+
+  const totalEl = document.getElementById('q-total');
+  if (totalEl) totalEl.textContent = getModeQuestions(currentMode).length;
 }
 
 function shuffle(arr) {
@@ -218,7 +267,17 @@ function showResults() {
   });
 
   // Save session
-  saveSession({ correct, total, score, elapsed, topicMap, date: Date.now() });
+  saveSession({
+    correct,
+    total,
+    score,
+    elapsed,
+    topicMap,
+    date: Date.now(),
+    modeId: currentMode,
+    modeName: TEST_MODES[currentMode]?.title || 'Тест',
+    completed: true
+  });
   clearActiveSession();
 
   // Populate result screen
@@ -249,6 +308,47 @@ function showResults() {
 
   renderHistoryTable();
   showScreen('result-screen');
+}
+
+function exitToMenu() {
+  if (results.length > 0) {
+    const ok = confirm('Сохранить текущий результат и выйти в меню?');
+    if (!ok) return;
+    saveInterruptedSession();
+  }
+
+  clearActiveSession();
+  shuffled = [];
+  current = 0;
+  results = [];
+  answered = false;
+  renderHistoryTable();
+  showScreen('start-screen');
+}
+
+function saveInterruptedSession() {
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  const correct = results.filter(Boolean).length;
+  const total = results.length;
+  const topicMap = {};
+
+  shuffled.slice(0, results.length).forEach((q, i) => {
+    if (!topicMap[q.topic]) topicMap[q.topic] = { ok: 0, total: 0 };
+    topicMap[q.topic].total++;
+    if (results[i]) topicMap[q.topic].ok++;
+  });
+
+  saveSession({
+    correct,
+    total,
+    score: total ? calcScore(correct, total) : 0,
+    elapsed,
+    topicMap,
+    date: Date.now(),
+    modeId: currentMode,
+    modeName: TEST_MODES[currentMode]?.title || 'Тест',
+    completed: false
+  });
 }
 
 function calcScore(correct, total) {
@@ -302,9 +402,13 @@ function getSessions() {
 
 function renderHistoryTable() {
   const sessions = getSessions();
-  const el = document.getElementById('history-table');
+  const tables = document.querySelectorAll('#history-table');
+  if (!tables.length) return;
+
   if (!sessions.length) {
-    el.innerHTML = '<p class="no-history">Сессий пока нет — пройди тест!</p>';
+    tables.forEach(el => {
+      el.innerHTML = '<p class="no-history">Сессий пока нет — пройди тест!</p>';
+    });
     return;
   }
 
@@ -312,21 +416,27 @@ function renderHistoryTable() {
     const date = new Date(s.date).toLocaleDateString('ru-RU', {
       day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
     });
+    const completed = s.completed !== false;
+    const scoreText = completed ? s.score : '—';
+    const scoreClassName = completed ? scoreClass(s.score) : 'interrupted';
     return `<tr>
       <td>${sessions.length - i}</td>
       <td>${date}</td>
-      <td><span class="score-pill score-${scoreClass(s.score)}">${s.score}</span></td>
+      <td>${s.modeName || 'Тест'}</td>
+      <td><span class="score-pill score-${scoreClassName}">${scoreText}</span></td>
       <td>${s.correct}/${s.total}</td>
+      <td>${completed ? 'Завершён' : 'Прерван'}</td>
       <td>${formatTime(s.elapsed)}</td>
     </tr>`;
   }).join('');
 
-  el.innerHTML = `
+  const html = `
     <table class="history-tbl">
-      <thead><tr><th>#</th><th>Дата</th><th>Оценка</th><th>Верно</th><th>Время</th></tr></thead>
+      <thead><tr><th>#</th><th>Дата</th><th>Режим</th><th>Оценка</th><th>Верно</th><th>Статус</th><th>Время</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   `;
+  tables.forEach(el => { el.innerHTML = html; });
 }
 
 function clearHistory() {
@@ -348,8 +458,9 @@ function saveActiveSession(nextCurrent = current) {
   });
 
   const session = {
-    version: 1,
-    questionCount: questions.length,
+    version: 2,
+    sourceQuestionCount: questions.length,
+    modeId: currentMode,
     questionIds: shuffled.map(q => q.id),
     questionState,
     current: Math.min(nextCurrent, shuffled.length),
@@ -381,10 +492,12 @@ function restoreActiveSession() {
   current = Math.min(Math.max(Number(session.current) || results.length, 0), shuffled.length);
   startTime = Number(session.startTime) || Date.now();
   showHints = Boolean(session.showHints);
+  currentMode = TEST_MODES[session.modeId] ? session.modeId : 'full';
   answered = false;
 
   const hintsToggle = document.getElementById('show-hints');
   if (hintsToggle) hintsToggle.checked = showHints;
+  selectMode(currentMode);
 
   if (current >= shuffled.length) {
     clearActiveSession();
@@ -404,15 +517,18 @@ function getActiveSession() {
 }
 
 function isActiveSessionValid(session) {
-  if (!session || session.version !== 1) return false;
-  if (session.questionCount !== questions.length) return false;
-  if (!Array.isArray(session.questionIds) || session.questionIds.length !== questions.length) return false;
+  if (!session || session.version !== 2) return false;
+  if (session.sourceQuestionCount !== questions.length) return false;
+  if (!TEST_MODES[session.modeId]) return false;
+  if (!Array.isArray(session.questionIds) || session.questionIds.length < 1) return false;
   if (!Array.isArray(session.results) || session.results.length > session.questionIds.length) return false;
 
   const questionIds = new Set(questions.map(q => q.id));
   const sessionIds = new Set(session.questionIds);
-  if (sessionIds.size !== questions.length) return false;
-  return session.questionIds.every(id => questionIds.has(id));
+  if (sessionIds.size !== session.questionIds.length) return false;
+
+  const modeIds = new Set(getModeQuestions(session.modeId).map(q => q.id));
+  return session.questionIds.every(id => questionIds.has(id) && modeIds.has(id));
 }
 
 function clearActiveSession() {

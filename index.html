@@ -29,6 +29,24 @@
         <div class="meta-chip">Порог «5»: <strong>91%</strong></div>
       </div>
 
+      <div class="mode-grid" aria-label="Режим теста">
+        <button class="mode-card active" type="button" data-mode="full" onclick="selectMode('full')">
+          <span class="mode-title">Полный банк</span>
+          <span class="mode-desc">Лабы + термины</span>
+          <span class="mode-count"><strong id="mode-count-full">—</strong> вопросов</span>
+        </button>
+        <button class="mode-card" type="button" data-mode="labs" onclick="selectMode('labs')">
+          <span class="mode-title">Лабы 1-8</span>
+          <span class="mode-desc">Практика по материалу</span>
+          <span class="mode-count"><strong id="mode-count-labs">—</strong> вопросов</span>
+        </button>
+        <button class="mode-card" type="button" data-mode="terms" onclick="selectMode('terms')">
+          <span class="mode-title">Термины</span>
+          <span class="mode-desc">Определения и база</span>
+          <span class="mode-count"><strong id="mode-count-terms">—</strong> вопросов</span>
+        </button>
+      </div>
+
       <label class="start-toggle">
         <input type="checkbox" id="show-hints">
         <span class="toggle-box" aria-hidden="true"></span>
@@ -57,7 +75,7 @@
     <div class="progress-wrapper">
       <div class="progress-meta">
         <span id="progress-label">0 / 0</span>
-        <span id="timer-display" style="color:var(--text-dim);font-family:var(--mono)"></span>
+        <button class="btn-ghost btn-menu" type="button" onclick="exitToMenu()">В меню</button>
       </div>
       <div id="progress-bar"></div>
     </div>

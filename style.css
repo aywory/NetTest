@@ -111,6 +111,55 @@ body::before {
 
 .meta-chip strong { color: var(--accent); }
 
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+  margin: -0.6rem auto 1.6rem;
+  max-width: 720px;
+}
+
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  gap: .28rem;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .8rem .9rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color .15s, background .15s, transform .1s, box-shadow .15s;
+}
+
+.mode-card:hover {
+  border-color: var(--accent);
+  background: var(--bg3);
+}
+
+.mode-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(0,212,255,.18);
+}
+
+.mode-title {
+  color: var(--text-bright);
+  font-weight: 700;
+  font-size: .95rem;
+}
+
+.mode-desc,
+.mode-count {
+  color: var(--text-dim);
+  font-size: .78rem;
+}
+
+.mode-count strong {
+  color: var(--accent);
+  font-family: var(--mono);
+}
+
 .start-toggle {
   width: fit-content;
   margin: -0.75rem auto 1.4rem;
@@ -197,6 +246,11 @@ body::before {
 }
 
 .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-menu {
+  padding: .3rem .75rem;
+  font-size: .78rem;
+}
 
 .btn-submit {
   margin-top: 1.2rem;
@@ -723,6 +777,16 @@ body::before {
 .score-pill.score-good      { background: rgba(0,212,255,.15); color: var(--accent); }
 .score-pill.score-ok        { background: rgba(255,209,102,.15); color: var(--yellow); }
 .score-pill.score-bad       { background: rgba(255,77,106,.15); color: var(--red); }
+.score-pill.score-interrupted {
+  background: rgba(90,112,144,.15);
+  color: var(--text-dim);
+}
+
+@media (max-width: 720px) {
+  .mode-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* ── RESULT ACTIONS ───────────────────────────────────────────────────── */
 .result-actions {
