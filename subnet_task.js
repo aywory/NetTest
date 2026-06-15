@@ -127,6 +127,41 @@ const SUBNET_TASK_TEMPLATES = [
       { router: 'R2', destinationSegmentId: 'lan-b', viaRouter: 'R3', viaSegmentId: 'link-r2-r3' },
       { router: 'R3', destinationSegmentId: 'lan-a', viaRouter: 'R2', viaSegmentId: 'link-r2-r3' }
     ]
+  },
+  {
+    id: 'four-router-line',
+    title: '2 LAN + 3 router-link',
+    routers: ['R1', 'R2', 'R3', 'R4'],
+    topologyLines: [
+      [
+        { type: 'node', label: 'PC-A' },
+        { type: 'link', label: 'LAN-A' },
+        { type: 'node', label: 'R1' },
+        { type: 'link', label: 'R1-R2' },
+        { type: 'node', label: 'R2' },
+        { type: 'link', label: 'R2-R3' },
+        { type: 'node', label: 'R3' },
+        { type: 'link', label: 'R3-R4' },
+        { type: 'node', label: 'R4' },
+        { type: 'link', label: 'LAN-B' },
+        { type: 'node', label: 'PC-B' }
+      ]
+    ],
+    segmentDefs: [
+      { id: 'lan-a', type: 'lan', title: 'LAN-A', router: 'R1', host: 'PC-A', profiles: ['small', 'medium', 'large', 'xlarge'] },
+      { id: 'lan-b', type: 'lan', title: 'LAN-B', router: 'R4', host: 'PC-B', profiles: ['small', 'medium', 'large', 'xlarge'] },
+      { id: 'link-r1-r2', type: 'link', title: 'R1-R2', routers: ['R1', 'R2'] },
+      { id: 'link-r2-r3', type: 'link', title: 'R2-R3', routers: ['R2', 'R3'] },
+      { id: 'link-r3-r4', type: 'link', title: 'R3-R4', routers: ['R3', 'R4'] }
+    ],
+    routeDefs: [
+      { router: 'R1', destinationSegmentId: 'lan-b', viaRouter: 'R2', viaSegmentId: 'link-r1-r2' },
+      { router: 'R2', destinationSegmentId: 'lan-a', viaRouter: 'R1', viaSegmentId: 'link-r1-r2' },
+      { router: 'R2', destinationSegmentId: 'lan-b', viaRouter: 'R3', viaSegmentId: 'link-r2-r3' },
+      { router: 'R3', destinationSegmentId: 'lan-a', viaRouter: 'R2', viaSegmentId: 'link-r2-r3' },
+      { router: 'R3', destinationSegmentId: 'lan-b', viaRouter: 'R4', viaSegmentId: 'link-r3-r4' },
+      { router: 'R4', destinationSegmentId: 'lan-a', viaRouter: 'R3', viaSegmentId: 'link-r3-r4' }
+    ]
   }
 ];
 
