@@ -12,6 +12,8 @@ let currentMode = 'full';
 let examSession = null;
 const STORAGE_KEY = 'net_quiz_sessions';
 const ACTIVE_STORAGE_KEY = 'net_quiz_active_session';
+const EXAM_ROTATION_STORAGE_KEY = 'net_quiz_exam_rotation';
+const EXAM_ROTATION_WINDOW = 6;
 
 const TEST_MODES = {
   full: {
@@ -126,8 +128,10 @@ function startExam() {
     return;
   }
 
-  const singles = pickDistributedQuestions(singleQuestions, 15);
-  const multis = pickDistributedQuestions(multiQuestions, 4);
+  const examRotation = getExamRotation();
+  const singles = pickDistributedQuestions(singleQuestions, 15, examRotation);
+  const multis = pickDistributedQuestions(multiQuestions, 4, examRotation);
+  rememberExamQuestions([...singles, ...multis], examRotation);
 
   currentMode = 'exam';
   shuffled = [...singles, ...multis].map(prepareQuestionForSession);
@@ -154,21 +158,21 @@ function startExam() {
   renderQuestion();
 }
 
-function pickDistributedQuestions(pool, count) {
+function pickDistributedQuestions(pool, count, rotation = null) {
   const groups = new Map();
-  shuffle([...pool]).forEach(q => {
+  sortQuestionsForExam(pool, rotation).forEach(q => {
     if (!groups.has(q.topic)) groups.set(q.topic, []);
     groups.get(q.topic).push(q);
   });
 
-  const topics = shuffle([...groups.keys()]);
+  const topics = sortExamTopics(groups, rotation);
   const picked = [];
   while (picked.length < count && topics.length) {
     let moved = false;
     for (const topic of topics) {
       const group = groups.get(topic);
       if (group?.length) {
-        picked.push(group.pop());
+        picked.push(group.shift());
         moved = true;
         if (picked.length >= count) break;
       }
@@ -178,11 +182,102 @@ function pickDistributedQuestions(pool, count) {
 
   if (picked.length < count) {
     const pickedIds = new Set(picked.map(q => q.id));
-    const rest = shuffle(pool.filter(q => !pickedIds.has(q.id)));
+    const rest = sortQuestionsForExam(pool.filter(q => !pickedIds.has(q.id)), rotation);
     picked.push(...rest.slice(0, count - picked.length));
   }
 
   return picked;
+}
+
+function sortQuestionsForExam(pool, rotation) {
+  return [...pool]
+    .map(q => ({
+      q,
+      score: examQuestionRepeatScore(q, rotation) + Math.random()
+    }))
+    .sort((a, b) => a.score - b.score)
+    .map(item => item.q);
+}
+
+function sortExamTopics(groups, rotation) {
+  return [...groups.keys()]
+    .map(topic => {
+      const topicQuestions = groups.get(topic) || [];
+      const bestQuestionScore = topicQuestions.length
+        ? Math.min(...topicQuestions.map(q => examQuestionRepeatScore(q, rotation)))
+        : 0;
+      return { topic, score: bestQuestionScore + Math.random() };
+    })
+    .sort((a, b) => a.score - b.score)
+    .map(item => item.topic);
+}
+
+function examQuestionRepeatScore(question, rotation) {
+  if (!rotation) return 0;
+
+  const id = String(question.id);
+  const recentIndex = rotation.recent.findIndex(attempt => attempt.questionIds.includes(id));
+  const recentPenalty = recentIndex >= 0
+    ? (EXAM_ROTATION_WINDOW - recentIndex) * 1000
+    : 0;
+  const usagePenalty = (rotation.usage[id] || 0) * 25;
+  return recentPenalty + usagePenalty;
+}
+
+function getExamRotation() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(EXAM_ROTATION_STORAGE_KEY));
+    if (!parsed || parsed.version !== 1) throw new Error('Invalid rotation');
+
+    const knownIds = new Set(questions.map(q => String(q.id)));
+    const recent = Array.isArray(parsed.recent)
+      ? parsed.recent
+          .map(attempt => ({
+            date: Number(attempt.date) || Date.now(),
+            questionIds: Array.isArray(attempt.questionIds)
+              ? attempt.questionIds.map(String).filter(id => knownIds.has(id))
+              : []
+          }))
+          .filter(attempt => attempt.questionIds.length)
+          .slice(0, EXAM_ROTATION_WINDOW)
+      : [];
+
+    const usage = {};
+    if (parsed.usage && typeof parsed.usage === 'object') {
+      Object.entries(parsed.usage).forEach(([id, count]) => {
+        if (knownIds.has(String(id))) usage[String(id)] = Math.max(0, Number(count) || 0);
+      });
+    }
+
+    return { version: 1, recent, usage };
+  } catch {
+    return { version: 1, recent: [], usage: {} };
+  }
+}
+
+function rememberExamQuestions(selectedQuestions, rotation = getExamRotation()) {
+  const questionIds = selectedQuestions.map(q => String(q.id));
+  if (!questionIds.length) return;
+
+  const usage = { ...rotation.usage };
+  questionIds.forEach(id => {
+    usage[id] = (usage[id] || 0) + 1;
+  });
+
+  const recent = [
+    { date: Date.now(), questionIds },
+    ...rotation.recent
+  ].slice(0, EXAM_ROTATION_WINDOW);
+
+  try {
+    localStorage.setItem(EXAM_ROTATION_STORAGE_KEY, JSON.stringify({
+      version: 1,
+      recent,
+      usage
+    }));
+  } catch {
+    // Rotation memory is helpful, but the exam must still start if storage is full.
+  }
 }
 
 function beginExamTask() {
@@ -710,6 +805,7 @@ function renderHistoryTable() {
 function clearHistory() {
   if (!confirm('Удалить всю историю сессий?')) return;
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(EXAM_ROTATION_STORAGE_KEY);
   renderHistoryTable();
 }
 
