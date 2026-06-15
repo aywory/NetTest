@@ -1,5 +1,135 @@
 let subnetTask = null;
 
+const LAN_HOST_PROFILES = {
+  tiny: { prefix: 29, min: 3, max: 6 },
+  small: { prefix: 28, min: 7, max: 14 },
+  medium: { prefix: 27, min: 15, max: 30 },
+  large: { prefix: 26, min: 31, max: 62 },
+  xlarge: { prefix: 25, min: 63, max: 120 }
+};
+
+const SUBNET_TASK_TEMPLATES = [
+  {
+    id: 'two-router-two-lan',
+    title: '2 LAN + 1 линк',
+    routers: ['R1', 'R2'],
+    topologyLines: [
+      [
+        { type: 'node', label: 'PC-A' },
+        { type: 'link', label: 'LAN-A' },
+        { type: 'node', label: 'R1' },
+        { type: 'link', label: 'R1-R2' },
+        { type: 'node', label: 'R2' },
+        { type: 'link', label: 'LAN-B' },
+        { type: 'node', label: 'PC-B' }
+      ]
+    ],
+    segmentDefs: [
+      { id: 'lan-a', type: 'lan', title: 'LAN-A', router: 'R1', host: 'PC-A', profiles: ['small', 'medium', 'large', 'xlarge'] },
+      { id: 'lan-b', type: 'lan', title: 'LAN-B', router: 'R2', host: 'PC-B', profiles: ['tiny', 'small', 'medium', 'large', 'xlarge'] },
+      { id: 'link-r1-r2', type: 'link', title: 'R1-R2', routers: ['R1', 'R2'] }
+    ],
+    routeDefs: [
+      { router: 'R1', destinationSegmentId: 'lan-b', viaRouter: 'R2', viaSegmentId: 'link-r1-r2' },
+      { router: 'R2', destinationSegmentId: 'lan-a', viaRouter: 'R1', viaSegmentId: 'link-r1-r2' }
+    ]
+  },
+  {
+    id: 'two-router-three-lan-r2',
+    title: '3 LAN + 1 линк',
+    routers: ['R1', 'R2'],
+    topologyLines: [
+      [
+        { type: 'node', label: 'PC-A' },
+        { type: 'link', label: 'LAN-A' },
+        { type: 'node', label: 'R1' },
+        { type: 'link', label: 'R1-R2' },
+        { type: 'node', label: 'R2' },
+        { type: 'link', label: 'LAN-B' },
+        { type: 'node', label: 'PC-B' }
+      ],
+      [
+        { type: 'node', label: 'R2' },
+        { type: 'link', label: 'LAN-C' },
+        { type: 'node', label: 'PC-C' }
+      ]
+    ],
+    segmentDefs: [
+      { id: 'lan-a', type: 'lan', title: 'LAN-A', router: 'R1', host: 'PC-A', profiles: ['small', 'medium', 'large', 'xlarge'] },
+      { id: 'lan-b', type: 'lan', title: 'LAN-B', router: 'R2', host: 'PC-B', profiles: ['tiny', 'small', 'medium', 'large'] },
+      { id: 'lan-c', type: 'lan', title: 'LAN-C', router: 'R2', host: 'PC-C', profiles: ['tiny', 'small', 'medium', 'large'] },
+      { id: 'link-r1-r2', type: 'link', title: 'R1-R2', routers: ['R1', 'R2'] }
+    ],
+    routeDefs: [
+      { router: 'R1', destinationSegmentId: 'lan-b', viaRouter: 'R2', viaSegmentId: 'link-r1-r2' },
+      { router: 'R1', destinationSegmentId: 'lan-c', viaRouter: 'R2', viaSegmentId: 'link-r1-r2' },
+      { router: 'R2', destinationSegmentId: 'lan-a', viaRouter: 'R1', viaSegmentId: 'link-r1-r2' }
+    ]
+  },
+  {
+    id: 'two-router-three-lan-r1',
+    title: '3 LAN + 1 линк',
+    routers: ['R1', 'R2'],
+    topologyLines: [
+      [
+        { type: 'node', label: 'PC-A' },
+        { type: 'link', label: 'LAN-A' },
+        { type: 'node', label: 'R1' },
+        { type: 'link', label: 'R1-R2' },
+        { type: 'node', label: 'R2' },
+        { type: 'link', label: 'LAN-B' },
+        { type: 'node', label: 'PC-B' }
+      ],
+      [
+        { type: 'node', label: 'R1' },
+        { type: 'link', label: 'LAN-C' },
+        { type: 'node', label: 'PC-C' }
+      ]
+    ],
+    segmentDefs: [
+      { id: 'lan-a', type: 'lan', title: 'LAN-A', router: 'R1', host: 'PC-A', profiles: ['tiny', 'small', 'medium', 'large'] },
+      { id: 'lan-b', type: 'lan', title: 'LAN-B', router: 'R2', host: 'PC-B', profiles: ['small', 'medium', 'large', 'xlarge'] },
+      { id: 'lan-c', type: 'lan', title: 'LAN-C', router: 'R1', host: 'PC-C', profiles: ['tiny', 'small', 'medium', 'large'] },
+      { id: 'link-r1-r2', type: 'link', title: 'R1-R2', routers: ['R1', 'R2'] }
+    ],
+    routeDefs: [
+      { router: 'R1', destinationSegmentId: 'lan-b', viaRouter: 'R2', viaSegmentId: 'link-r1-r2' },
+      { router: 'R2', destinationSegmentId: 'lan-a', viaRouter: 'R1', viaSegmentId: 'link-r1-r2' },
+      { router: 'R2', destinationSegmentId: 'lan-c', viaRouter: 'R1', viaSegmentId: 'link-r1-r2' }
+    ]
+  },
+  {
+    id: 'three-router-transit',
+    title: '2 LAN + 2 router-link',
+    routers: ['R1', 'R2', 'R3'],
+    topologyLines: [
+      [
+        { type: 'node', label: 'PC-A' },
+        { type: 'link', label: 'LAN-A' },
+        { type: 'node', label: 'R1' },
+        { type: 'link', label: 'R1-R2' },
+        { type: 'node', label: 'R2' },
+        { type: 'link', label: 'R2-R3' },
+        { type: 'node', label: 'R3' },
+        { type: 'link', label: 'LAN-B' },
+        { type: 'node', label: 'PC-B' }
+      ]
+    ],
+    segmentDefs: [
+      { id: 'lan-a', type: 'lan', title: 'LAN-A', router: 'R1', host: 'PC-A', profiles: ['small', 'medium', 'large', 'xlarge'] },
+      { id: 'lan-b', type: 'lan', title: 'LAN-B', router: 'R3', host: 'PC-B', profiles: ['tiny', 'small', 'medium', 'large', 'xlarge'] },
+      { id: 'link-r1-r2', type: 'link', title: 'R1-R2', routers: ['R1', 'R2'] },
+      { id: 'link-r2-r3', type: 'link', title: 'R2-R3', routers: ['R2', 'R3'] }
+    ],
+    routeDefs: [
+      { router: 'R1', destinationSegmentId: 'lan-b', viaRouter: 'R2', viaSegmentId: 'link-r1-r2' },
+      { router: 'R2', destinationSegmentId: 'lan-a', viaRouter: 'R1', viaSegmentId: 'link-r1-r2' },
+      { router: 'R2', destinationSegmentId: 'lan-b', viaRouter: 'R3', viaSegmentId: 'link-r2-r3' },
+      { router: 'R3', destinationSegmentId: 'lan-a', viaRouter: 'R2', viaSegmentId: 'link-r2-r3' }
+    ]
+  }
+];
+
 function startSubnetTask(options = {}) {
   const isTaskScreenActive = document.getElementById('subnet-task-screen')?.classList.contains('active');
   if (isTaskScreenActive && subnetTask?.dirty && !subnetTask.saved) {
@@ -29,59 +159,199 @@ function exitSubnetTask() {
 }
 
 function generateSubnetTask() {
-  const thirdOctet = randomInt(10, 220);
-  const poolNetwork = ipToInt(`192.168.${thirdOctet}.0`);
-  const pool = makeSubnet(poolNetwork, 24);
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const template = randomFrom(SUBNET_TASK_TEMPLATES);
+    const segments = buildSegments(template);
+    const poolPrefix = choosePoolPrefix(segments);
+    if (!poolPrefix) continue;
 
-  const segments = [
-    {
-      id: 'lanA',
-      title: 'LAN-A',
-      description: 'PC-A и интерфейс R1 LAN-A',
-      hosts: randomFrom([42, 46, 50, 54, 58, 60])
-    },
-    {
-      id: 'lanB',
-      title: 'LAN-B',
-      description: 'PC-B и интерфейс R2 LAN-B',
-      hosts: randomFrom([18, 20, 22, 24, 26, 28, 30])
-    },
-    {
-      id: 'link',
-      title: 'R1-R2',
-      description: 'Point-to-point линк между маршрутизаторами',
-      hosts: 2
-    }
-  ].map(seg => {
-    const prefix = requiredPrefix(seg.hosts);
+    const pool = generatePrivatePool(poolPrefix);
+    const recommended = allocateRecommended(pool.network, segments);
+    if (recommended[recommended.length - 1].broadcast > pool.broadcast) continue;
+
+    const byId = Object.fromEntries(recommended.map(item => [item.id, item]));
+    const ipRows = buildIpRows(template);
+    const gatewayRows = buildGatewayRows(template);
+    const routeRows = buildRouteRows(template);
+    const ips = buildExpectedIps(ipRows, byId);
+
+    const task = {
+      pool,
+      templateId: template.id,
+      templateTitle: template.title,
+      topologyLines: template.topologyLines,
+      routers: template.routers,
+      segments,
+      recommended,
+      ipRows,
+      gatewayRows,
+      routeRows,
+      ips,
+      startTime: Date.now(),
+      saved: false,
+      dirty: false
+    };
+
+    if (isGeneratedTaskValid(task)) return task;
+  }
+
+  throw new Error('Не удалось сгенерировать корректную задачу адресации');
+}
+
+function buildSegments(template) {
+  return template.segmentDefs.map(def => {
+    const base = def.type === 'lan'
+      ? buildLanSegment(def)
+      : buildLinkSegment(def);
+    const prefix = requiredPrefix(base.hosts);
     return {
-      ...seg,
+      ...base,
       prefix,
       mask: prefixToMask(prefix),
       capacity: usableHosts(prefix)
     };
   });
+}
 
-  const recommended = allocateRecommended(pool.network, segments);
-  const byId = Object.fromEntries(recommended.map(item => [item.id, item]));
-  const ips = {
-    r1Lan: byId.lanA.network + 1,
-    pcA: byId.lanA.network + 2,
-    r1Link: byId.link.network + 1,
-    r2Link: byId.link.network + 2,
-    r2Lan: byId.lanB.network + 1,
-    pcB: byId.lanB.network + 2
-  };
-
+function buildLanSegment(def) {
+  const profile = LAN_HOST_PROFILES[randomFrom(def.profiles)];
+  const hosts = randomInt(profile.min, profile.max);
   return {
-    pool,
-    segments,
-    recommended,
-    ips,
-    startTime: Date.now(),
-    saved: false,
-    dirty: false
+    id: def.id,
+    type: 'lan',
+    title: def.title,
+    router: def.router,
+    host: def.host,
+    hosts,
+    description: `${def.host} и интерфейс ${def.router} ${def.title}`,
+    meaning: `Пользовательская LAN: нужен usable-диапазон для ${def.host}, интерфейса ${def.router} и указанного запаса адресов.`
   };
+}
+
+function buildLinkSegment(def) {
+  return {
+    id: def.id,
+    type: 'link',
+    title: def.title,
+    routers: [...def.routers],
+    hosts: 2,
+    description: `Point-to-point линк между ${def.routers.join(' и ')}`,
+    meaning: `Транзитная сеть только для двух интерфейсов: ${def.routers.join(' и ')}. Обычно достаточно /30.`
+  };
+}
+
+function choosePoolPrefix(segments) {
+  const totalSize = segments.reduce((sum, seg) => sum + blockSize(seg.prefix), 0);
+  if (totalSize <= 240) return Math.random() < 0.85 ? 24 : 23;
+  if (totalSize <= 256) return 24;
+  if (totalSize <= 512) return 23;
+  return null;
+}
+
+function generatePrivatePool(prefix) {
+  const family = randomFrom(['192', '10', '172']);
+  const third = prefix === 23 ? randomEven(10, 220) : randomInt(10, 220);
+
+  if (family === '10') {
+    return makeSubnet(ipToInt(`10.${randomInt(1, 240)}.${third}.0`), prefix);
+  }
+
+  if (family === '172') {
+    return makeSubnet(ipToInt(`172.${randomInt(16, 31)}.${third}.0`), prefix);
+  }
+
+  return makeSubnet(ipToInt(`192.168.${third}.0`), prefix);
+}
+
+function buildIpRows(template) {
+  const rows = [];
+  template.segmentDefs.forEach(def => {
+    if (def.type === 'lan') {
+      rows.push({
+        key: ipKey(def.router, def.id),
+        label: `${def.router} ${def.title}`,
+        segmentId: def.id,
+        segmentLabel: def.title,
+        owner: def.router,
+        kind: 'router'
+      });
+      rows.push({
+        key: ipKey(def.host, def.id),
+        label: def.host,
+        segmentId: def.id,
+        segmentLabel: def.title,
+        owner: def.host,
+        kind: 'host'
+      });
+    } else {
+      def.routers.forEach(router => {
+        rows.push({
+          key: ipKey(router, def.id),
+          label: `${router} ${def.title}`,
+          segmentId: def.id,
+          segmentLabel: def.title,
+          owner: router,
+          kind: 'router'
+        });
+      });
+    }
+  });
+  return rows;
+}
+
+function buildGatewayRows(template) {
+  return template.segmentDefs
+    .filter(def => def.type === 'lan')
+    .map(def => ({
+      key: `gw-${def.host.toLowerCase()}`,
+      host: def.host,
+      hostIpKey: ipKey(def.host, def.id),
+      router: def.router,
+      routerIpKey: ipKey(def.router, def.id),
+      segmentId: def.id,
+      segmentLabel: def.title
+    }));
+}
+
+function buildRouteRows(template) {
+  return template.routeDefs.map(def => ({
+    id: `${def.router.toLowerCase()}-to-${def.destinationSegmentId}`,
+    router: def.router,
+    destinationSegmentId: def.destinationSegmentId,
+    viaRouter: def.viaRouter,
+    viaSegmentId: def.viaSegmentId,
+    viaIpKey: ipKey(def.viaRouter, def.viaSegmentId)
+  }));
+}
+
+function buildExpectedIps(ipRows, subnetsById) {
+  const nextOffset = {};
+  const ips = {};
+
+  ipRows.forEach(row => {
+    const subnet = subnetsById[row.segmentId];
+    nextOffset[row.segmentId] = nextOffset[row.segmentId] || 1;
+    ips[row.key] = subnet.network + nextOffset[row.segmentId];
+    nextOffset[row.segmentId]++;
+  });
+
+  return ips;
+}
+
+function isGeneratedTaskValid(task) {
+  const subnets = task.recommended;
+  if (!subnets.every(seg => seg.network >= task.pool.network && seg.broadcast <= task.pool.broadcast)) return false;
+  if (hasOverlap(subnets)) return false;
+
+  const byId = Object.fromEntries(subnets.map(seg => [seg.id, seg]));
+  const ipValues = Object.values(task.ips);
+  if (new Set(ipValues).size !== ipValues.length) return false;
+  if (!task.ipRows.every(row => isUsableInSubnet(task.ips[row.key], byId[row.segmentId]))) return false;
+  if (!task.gatewayRows.every(row => isUsableInSubnet(task.ips[row.routerIpKey], byId[row.segmentId]))) return false;
+  return task.routeRows.every(row =>
+    byId[row.destinationSegmentId] &&
+    isUsableInSubnet(task.ips[row.viaIpKey], byId[row.viaSegmentId])
+  );
 }
 
 function renderSubnetTask() {
@@ -100,23 +370,22 @@ function renderSubnetTask() {
 
 function renderProblemStatement() {
   const { pool, segments } = subnetTask;
-  const lanA = segments.find(seg => seg.id === 'lanA');
-  const lanB = segments.find(seg => seg.id === 'lanB');
-  const link = segments.find(seg => seg.id === 'link');
+  const lanCount = segments.filter(seg => seg.type === 'lan').length;
+  const linkCount = segments.filter(seg => seg.type === 'link').length;
 
   return `
     <div class="task-card task-statement">
       <div class="task-kicker">Условие задачи</div>
-      <h3>Дан пул ${subnetLabel(pool)}. Нужно построить адресный план для сети PC-A — R1 — R2 — PC-B</h3>
+      <h3>Дан пул ${subnetLabel(pool)}. Нужно построить адресный план для схемы: ${subnetTask.templateTitle}</h3>
 
       <div class="task-topology" aria-label="Топология задачи">
-        <span>PC-A</span>
-        <i>LAN-A</i>
-        <span>R1</span>
-        <i>R1-R2</i>
-        <span>R2</span>
-        <i>LAN-B</i>
-        <span>PC-B</span>
+        ${subnetTask.topologyLines.map(line => `
+          <div class="task-topology-line">
+            ${line.map(item => item.type === 'node'
+              ? `<span>${item.label}</span>`
+              : `<i>${item.label}</i>`).join('')}
+          </div>
+        `).join('')}
       </div>
 
       <div class="task-brief-grid">
@@ -124,15 +393,16 @@ function renderProblemStatement() {
           <h4>Что дано</h4>
           <ul>
             <li>Один общий пул адресов: <strong>${subnetLabel(pool)}</strong>.</li>
-            <li>Две пользовательские LAN-сети и один линк между роутерами.</li>
-            <li>Для каждой сети известно минимальное число хостов.</li>
+            <li>Пользовательских LAN-сетей: <strong>${lanCount}</strong>.</li>
+            <li>Router-to-router линков: <strong>${linkCount}</strong>.</li>
+            <li>Для каждого сегмента известно минимальное число usable-адресов.</li>
           </ul>
         </div>
         <div class="task-brief-block">
           <h4>Что нужно сделать</h4>
           <ul>
             <li>Разбить пул на подсети через VLSM, без пересечений.</li>
-            <li>Назначить IP-адреса ПК и интерфейсам R1/R2.</li>
+            <li>Назначить IP-адреса ПК и интерфейсам ${subnetTask.routers.join('/')}.</li>
             <li>Указать default gateway на ПК и статические маршруты на роутерах.</li>
           </ul>
         </div>
@@ -140,32 +410,22 @@ function renderProblemStatement() {
 
       <div class="task-table-wrap">
         <table class="task-table">
-          <thead><tr><th>Сегмент</th><th>Что подключено</th><th>Минимум хостов</th><th>Что это значит</th></tr></thead>
+          <thead><tr><th>Сегмент</th><th>Что подключено</th><th>Минимум usable-адресов</th><th>Что это значит</th></tr></thead>
           <tbody>
-            <tr>
-              <td>${lanA.title}</td>
-              <td>${lanA.description}</td>
-              <td>${lanA.hosts}</td>
-              <td>Нужна подсеть для PC-A и интерфейса R1, плюс запас под указанное число хостов.</td>
-            </tr>
-            <tr>
-              <td>${lanB.title}</td>
-              <td>${lanB.description}</td>
-              <td>${lanB.hosts}</td>
-              <td>Отдельная LAN за R2. Она не должна пересекаться с LAN-A.</td>
-            </tr>
-            <tr>
-              <td>${link.title}</td>
-              <td>${link.description}</td>
-              <td>${link.hosts}</td>
-              <td>Point-to-point сеть только для двух интерфейсов: R1 link и R2 link.</td>
-            </tr>
+            ${segments.map(seg => `
+              <tr>
+                <td>${seg.title}</td>
+                <td>${seg.description}</td>
+                <td>${seg.hosts}</td>
+                <td>${seg.meaning}</td>
+              </tr>
+            `).join('')}
           </tbody>
         </table>
       </div>
 
       <div class="task-explain">
-        <strong>Идея задачи:</strong> преподаватель проверяет не одну команду, а весь адресный план.
+        <strong>Идея задачи:</strong> преподаватель проверяет весь адресный план.
         Сначала выбирается размер подсетей, потом сами диапазоны, потом IP устройств, потом шлюзы и маршруты.
         Если перепутать порядок, легко назначить адрес из чужой подсети или прописать next-hop, до которого роутер физически не может добраться.
       </div>
@@ -194,7 +454,7 @@ function renderMaskStage() {
       <div class="task-hint">Формула usable-адресов: <strong>2^h - 2</strong>, где h — число бит под хосты. Префикс: <strong>32 - h</strong>. Выбирай минимальную подходящую подсеть: не меньше нужного, но и не слишком большую.</div>
       <div class="task-table-wrap">
         <table class="task-table">
-          <thead><tr><th>Сегмент</th><th>Нужно хостов</th><th>Префикс</th><th>Маска</th></tr></thead>
+          <thead><tr><th>Сегмент</th><th>Нужно usable-адресов</th><th>Префикс</th><th>Маска</th></tr></thead>
           <tbody>
             ${subnetTask.segments.map(seg => `
               <tr>
@@ -218,10 +478,10 @@ function renderSubnetStage() {
       <h3>3. Разложи подсети внутри пула</h3>
       <div class="task-explain">
         Теперь нужно взять общий пул и нарезать его на непересекающиеся диапазоны.
-        Важно: адрес сети — это не любой удобный адрес, а начало блока.
+        Адрес сети — это не любой удобный адрес, а начало блока.
         Broadcast — последний адрес этого блока. Обычным устройствам оба этих адреса назначать нельзя.
       </div>
-      <div class="task-hint">Практичный порядок для VLSM: сначала самая большая LAN, потом меньшая LAN, потом /30 линк. Следующая подсеть начинается после broadcast предыдущей. Адрес сети должен попадать на границу блока: для /26 шаг 64, для /27 шаг 32, для /30 шаг 4.</div>
+      <div class="task-hint">Практичный порядок для VLSM: сначала самые большие LAN, затем меньшие LAN, затем /30 линк. Шаги блоков в этой задаче: ${blockStepsText()}.</div>
       <div class="task-table-wrap">
         <table class="task-table">
           <thead><tr><th>Сегмент</th><th>Сеть</th><th>Префикс</th><th>Broadcast</th></tr></thead>
@@ -243,30 +503,20 @@ function renderSubnetStage() {
 }
 
 function renderIpStage() {
-  const rows = [
-    ['R1 LAN-A', 'ip-r1Lan', 'в LAN-A'],
-    ['PC-A', 'ip-pcA', 'в LAN-A'],
-    ['R1 link', 'ip-r1Link', 'в R1-R2'],
-    ['R2 link', 'ip-r2Link', 'в R1-R2'],
-    ['R2 LAN-B', 'ip-r2Lan', 'в LAN-B'],
-    ['PC-B', 'ip-pcB', 'в LAN-B']
-  ];
-
   return `
     <div class="task-card">
       <h3>4. Назначь IP-адреса устройствам</h3>
       <div class="task-explain">
         Здесь ты заполняешь адреса конкретных интерфейсов.
         IP устройства должен лежать внутри той подсети, к которой это устройство подключено.
-        У роутера R1 будет два адреса: один в LAN-A, второй на линке R1-R2.
-        У R2 тоже два адреса: один на линке, второй в LAN-B.
+        У маршрутизатора может быть несколько IP-адресов: по одному на каждом подключённом сегменте.
       </div>
       <div class="task-hint">Можно выбрать любые usable-адреса внутри нужной подсети. Нельзя использовать адрес сети, broadcast и одинаковый IP на двух устройствах.</div>
       <div class="task-table-wrap">
         <table class="task-table">
-          <thead><tr><th>Устройство</th><th>IP-адрес</th><th>Где должен находиться</th></tr></thead>
+          <thead><tr><th>Устройство/интерфейс</th><th>IP-адрес</th><th>Где должен находиться</th></tr></thead>
           <tbody>
-            ${rows.map(([label, id, place]) => `<tr><td>${label}</td><td>${taskInput(id, '192.168.x.x')}</td><td>${place}</td></tr>`).join('')}
+            ${subnetTask.ipRows.map(row => `<tr><td>${row.label}</td><td>${taskInput(`ip-${row.key}`, '192.168.x.x')}</td><td>в ${row.segmentLabel}</td></tr>`).join('')}
           </tbody>
         </table>
       </div>
@@ -280,17 +530,22 @@ function renderGatewayStage() {
     <div class="task-card">
       <h3>5. Укажи шлюзы на ПК</h3>
       <div class="task-explain">
-        Шлюз нужен только конечным ПК, чтобы отправлять пакеты в чужие сети.
-        ПК не указывает адрес второго роутера и не указывает сеть целиком.
+        Шлюз нужен конечным ПК, чтобы отправлять пакеты в чужие сети.
+        ПК не указывает адрес дальнего роутера и не указывает сеть целиком.
         Он указывает ближайший интерфейс своего роутера в своей LAN.
       </div>
-      <div class="task-hint">Default gateway хоста — это IP интерфейса маршрутизатора в той же LAN. PC-A указывает на R1 LAN-A, PC-B указывает на R2 LAN-B.</div>
+      <div class="task-hint">Default gateway хоста — это IP интерфейса маршрутизатора в той же LAN.</div>
       <div class="task-table-wrap">
         <table class="task-table">
-          <thead><tr><th>Хост</th><th>Default gateway</th></tr></thead>
+          <thead><tr><th>Хост</th><th>Default gateway</th><th>Должен совпасть с</th></tr></thead>
           <tbody>
-            <tr><td>PC-A</td><td>${taskInput('gw-pcA', 'IP R1 LAN-A')}</td></tr>
-            <tr><td>PC-B</td><td>${taskInput('gw-pcB', 'IP R2 LAN-B')}</td></tr>
+            ${subnetTask.gatewayRows.map(row => `
+              <tr>
+                <td>${row.host}</td>
+                <td>${taskInput(row.key, `IP ${row.router} ${row.segmentLabel}`)}</td>
+                <td>${row.router} в ${row.segmentLabel}</td>
+              </tr>
+            `).join('')}
           </tbody>
         </table>
       </div>
@@ -304,18 +559,23 @@ function renderRouteStage() {
     <div class="task-card">
       <h3>6. Пропиши статические маршруты</h3>
       <div class="task-explain">
-        Каждый роутер сам знает только directly connected сети: свои LAN и общий линк.
-        R1 не знает, где находится LAN-B, пока ты не укажешь маршрут через R2.
-        R2 не знает LAN-A, пока ты не укажешь маршрут через R1.
-        Next-hop должен быть адресом соседнего роутера на общей сети R1-R2.
+        Каждый роутер сам знает только directly connected сети: свои LAN и свои router-to-router линки.
+        Для чужих LAN нужны статические маршруты. Next-hop должен быть адресом соседнего роутера на общей сети.
       </div>
-      <div class="task-hint">Connected-сети прописывать не нужно. R1 нужен маршрут к LAN-B через IP R2 на линке. R2 нужен маршрут к LAN-A через IP R1 на линке. В Cisco это выглядит как: <strong>ip route сеть маска next-hop</strong>.</div>
+      <div class="task-hint">Connected-сети прописывать не нужно. В Cisco статический маршрут выглядит как: <strong>ip route сеть маска next-hop</strong>.</div>
       <div class="task-table-wrap">
         <table class="task-table">
-          <thead><tr><th>Роутер</th><th>Сеть назначения</th><th>Маска</th><th>Next-hop</th></tr></thead>
+          <thead><tr><th>Роутер</th><th>Куда нужен маршрут</th><th>Сеть назначения</th><th>Маска</th><th>Next-hop</th></tr></thead>
           <tbody>
-            <tr><td>R1</td><td>${taskInput('route-r1-network', 'LAN-B network')}</td><td>${taskInput('route-r1-mask', 'LAN-B mask')}</td><td>${taskInput('route-r1-next', 'R2 link IP')}</td></tr>
-            <tr><td>R2</td><td>${taskInput('route-r2-network', 'LAN-A network')}</td><td>${taskInput('route-r2-mask', 'LAN-A mask')}</td><td>${taskInput('route-r2-next', 'R1 link IP')}</td></tr>
+            ${subnetTask.routeRows.map(row => `
+              <tr>
+                <td>${row.router}</td>
+                <td>${segmentTitle(row.destinationSegmentId)} через ${row.viaRouter}</td>
+                <td>${taskInput(`route-${row.id}-network`, `${segmentTitle(row.destinationSegmentId)} network`)}</td>
+                <td>${taskInput(`route-${row.id}-mask`, `${segmentTitle(row.destinationSegmentId)} mask`)}</td>
+                <td>${taskInput(`route-${row.id}-next`, `${row.viaRouter} ${segmentTitle(row.viaSegmentId)} IP`)}</td>
+              </tr>
+            `).join('')}
           </tbody>
         </table>
       </div>
@@ -387,7 +647,7 @@ function evaluateMasks() {
       return;
     }
 
-    const formula = `${seg.hosts} хостов: нужно минимум ${seg.capacity}, значит ${prefixLabel(seg.prefix)} / ${seg.mask}`;
+    const formula = `${seg.hosts} usable-адресов: нужно минимум ${seg.capacity}, значит ${prefixLabel(seg.prefix)} / ${seg.mask}`;
     if (prefix !== seg.prefix) messages.push(`${seg.title}: неверный префикс. ${formula}.`);
     if (maskPrefix !== seg.prefix) messages.push(`${seg.title}: неверная маска. Для ${prefixLabel(seg.prefix)} нужна ${seg.mask}.`);
   });
@@ -427,44 +687,39 @@ function evaluateIps() {
   const subnets = parseUserSubnets();
   const values = getIpValues();
   const messages = [];
-  let score = 0;
+  let correctRows = 0;
 
-  const checks = [
-    ['r1Lan', 'R1 LAN-A', 'lanA'],
-    ['pcA', 'PC-A', 'lanA'],
-    ['r1Link', 'R1 link', 'link'],
-    ['r2Link', 'R2 link', 'link'],
-    ['r2Lan', 'R2 LAN-B', 'lanB'],
-    ['pcB', 'PC-B', 'lanB']
-  ];
-
-  checks.forEach(([key, label, segId]) => {
-    const ip = values[key];
-    const subnet = subnets.byId[segId];
+  subnetTask.ipRows.forEach(row => {
+    const ip = values[row.key];
+    const subnet = subnets.byId[row.segmentId];
 
     if (ip == null) {
-      messages.push(`${label}: IP-адрес не заполнен или записан неверно.`);
+      messages.push(`${row.label}: IP-адрес не заполнен или записан неверно.`);
       return;
     }
     if (!subnet?.valid) {
-      messages.push(`${label}: сначала исправь подсеть ${segmentTitle(segId)}.`);
+      messages.push(`${row.label}: сначала исправь подсеть ${segmentTitle(row.segmentId)}.`);
       return;
     }
     if (!isUsableInSubnet(ip, subnet)) {
-      messages.push(`${label}: адрес должен быть usable-адресом внутри ${segmentTitle(segId)}, не адресом сети и не broadcast.`);
+      messages.push(`${row.label}: адрес должен быть usable-адресом внутри ${segmentTitle(row.segmentId)}, не адресом сети и не broadcast.`);
       return;
     }
-    score += 0.5;
+    correctRows++;
   });
 
   const ipList = Object.values(values).filter(v => v != null);
-  const unique = new Set(ipList).size === ipList.length && ipList.length === 6;
-  if (unique) score += 1;
-  else messages.push('IP-адреса устройств должны быть заполнены без повторов.');
+  const allFilled = ipList.length === subnetTask.ipRows.length;
+  const unique = allFilled && new Set(ipList).size === ipList.length;
+  if (!unique) messages.push('IP-адреса устройств должны быть заполнены без повторов.');
+
+  const score = (correctRows === subnetTask.ipRows.length && unique)
+    ? 4
+    : round1(correctRows * 3 / subnetTask.ipRows.length + (unique ? 1 : 0));
 
   return {
-    ok: score === 4,
-    score: round1(score),
+    ok: correctRows === subnetTask.ipRows.length && unique,
+    score,
     max: 4,
     messages: messages.length ? messages : ['IP-адреса устройств корректны и не пересекаются.']
   };
@@ -473,29 +728,32 @@ function evaluateIps() {
 function evaluateGateways() {
   const subnets = parseUserSubnets();
   const ips = getIpValues();
-  const pcAGw = parseIp(readTaskValue('gw-pcA'));
-  const pcBGw = parseIp(readTaskValue('gw-pcB'));
   const messages = [];
-  let score = 0;
+  let correctRows = 0;
 
-  if (!subnets.byId.lanA?.valid || !isUsableInSubnet(ips.r1Lan, subnets.byId.lanA)) {
-    messages.push('PC-A: сначала исправь подсеть LAN-A и IP интерфейса R1 LAN-A, иначе gateway нельзя проверить надёжно.');
-  } else if (pcAGw === ips.r1Lan) {
-    score += 1.5;
-  } else {
-    messages.push('PC-A: default gateway должен совпадать с IP интерфейса R1 LAN-A.');
-  }
+  subnetTask.gatewayRows.forEach(row => {
+    const gateway = parseIp(readTaskValue(row.key));
+    const routerIp = ips[row.routerIpKey];
+    const subnet = subnets.byId[row.segmentId];
 
-  if (!subnets.byId.lanB?.valid || !isUsableInSubnet(ips.r2Lan, subnets.byId.lanB)) {
-    messages.push('PC-B: сначала исправь подсеть LAN-B и IP интерфейса R2 LAN-B, иначе gateway нельзя проверить надёжно.');
-  } else if (pcBGw === ips.r2Lan) {
-    score += 1.5;
-  } else {
-    messages.push('PC-B: default gateway должен совпадать с IP интерфейса R2 LAN-B.');
-  }
+    if (!subnet?.valid || !isUsableInSubnet(routerIp, subnet)) {
+      messages.push(`${row.host}: сначала исправь подсеть ${row.segmentLabel} и IP интерфейса ${row.router}, иначе gateway нельзя проверить надёжно.`);
+      return;
+    }
+
+    if (gateway === routerIp) {
+      correctRows++;
+    } else {
+      messages.push(`${row.host}: default gateway должен совпадать с IP интерфейса ${row.router} в ${row.segmentLabel}.`);
+    }
+  });
+
+  const score = correctRows === subnetTask.gatewayRows.length
+    ? 3
+    : round1(correctRows * 3 / subnetTask.gatewayRows.length);
 
   return {
-    ok: score === 3,
+    ok: correctRows === subnetTask.gatewayRows.length,
     score,
     max: 3,
     messages: messages.length ? messages : ['Шлюзы указаны верно.']
@@ -505,29 +763,33 @@ function evaluateGateways() {
 function evaluateRoutes() {
   const subnets = parseUserSubnets();
   const ips = getIpValues();
-  const r1 = readRoute('r1');
-  const r2 = readRoute('r2');
   const messages = [];
-  let score = 0;
+  let correctRows = 0;
 
-  if (!subnets.byId.link?.valid || !isUsableInSubnet(ips.r2Link, subnets.byId.link)) {
-    messages.push('R1: сначала исправь подсеть R1-R2 и IP R2 на этом линке, иначе next-hop нельзя проверить надёжно.');
-  } else if (isRouteCorrect(r1, subnets.byId.lanB, ips.r2Link)) {
-    score += 2;
-  } else {
-    messages.push('R1: нужен маршрут к LAN-B через IP R2 на линке R1-R2.');
-  }
+  subnetTask.routeRows.forEach(row => {
+    const route = readRoute(row.id);
+    const targetSubnet = subnets.byId[row.destinationSegmentId];
+    const viaSubnet = subnets.byId[row.viaSegmentId];
+    const nextHop = ips[row.viaIpKey];
 
-  if (!subnets.byId.link?.valid || !isUsableInSubnet(ips.r1Link, subnets.byId.link)) {
-    messages.push('R2: сначала исправь подсеть R1-R2 и IP R1 на этом линке, иначе next-hop нельзя проверить надёжно.');
-  } else if (isRouteCorrect(r2, subnets.byId.lanA, ips.r1Link)) {
-    score += 2;
-  } else {
-    messages.push('R2: нужен маршрут к LAN-A через IP R1 на линке R1-R2.');
-  }
+    if (!viaSubnet?.valid || !isUsableInSubnet(nextHop, viaSubnet)) {
+      messages.push(`${row.router}: сначала исправь подсеть ${segmentTitle(row.viaSegmentId)} и IP ${row.viaRouter} на этом линке, иначе next-hop нельзя проверить надёжно.`);
+      return;
+    }
+
+    if (isRouteCorrect(route, targetSubnet, nextHop)) {
+      correctRows++;
+    } else {
+      messages.push(`${row.router}: нужен маршрут к ${segmentTitle(row.destinationSegmentId)} через IP ${row.viaRouter} на линке ${segmentTitle(row.viaSegmentId)}.`);
+    }
+  });
+
+  const score = correctRows === subnetTask.routeRows.length
+    ? 4
+    : round1(correctRows * 4 / subnetTask.routeRows.length);
 
   return {
-    ok: score === 4,
+    ok: correctRows === subnetTask.routeRows.length,
     score,
     max: 4,
     messages: messages.length ? messages : ['Статические маршруты указаны верно.']
@@ -638,9 +900,16 @@ function renderSubnetSolution() {
   `).join('');
 
   const byId = Object.fromEntries(subnetTask.recommended.map(seg => [seg.id, seg]));
-  const { ips } = subnetTask;
-  const routeR1 = `ip route ${intToIp(byId.lanB.network)} ${byId.lanB.mask} ${intToIp(ips.r2Link)}`;
-  const routeR2 = `ip route ${intToIp(byId.lanA.network)} ${byId.lanA.mask} ${intToIp(ips.r1Link)}`;
+  const ipRows = subnetTask.ipRows.map(row => `
+    <tr>
+      <td>${row.label}</td>
+      <td>${intToIp(subnetTask.ips[row.key])}</td>
+    </tr>
+  `).join('');
+  const routes = subnetTask.routeRows.map(row => {
+    const target = byId[row.destinationSegmentId];
+    return `${row.router}(config)# ip route ${intToIp(target.network)} ${target.mask} ${intToIp(subnetTask.ips[row.viaIpKey])}`;
+  }).join('\n');
 
   return `
     <div class="task-card" style="margin-top:1rem">
@@ -654,19 +923,11 @@ function renderSubnetSolution() {
       </div>
       <div class="task-table-wrap">
         <table class="task-table">
-          <thead><tr><th>Устройство</th><th>IP</th></tr></thead>
-          <tbody>
-            <tr><td>R1 LAN-A</td><td>${intToIp(ips.r1Lan)}</td></tr>
-            <tr><td>PC-A</td><td>${intToIp(ips.pcA)}</td></tr>
-            <tr><td>R1 link</td><td>${intToIp(ips.r1Link)}</td></tr>
-            <tr><td>R2 link</td><td>${intToIp(ips.r2Link)}</td></tr>
-            <tr><td>R2 LAN-B</td><td>${intToIp(ips.r2Lan)}</td></tr>
-            <tr><td>PC-B</td><td>${intToIp(ips.pcB)}</td></tr>
-          </tbody>
+          <thead><tr><th>Устройство/интерфейс</th><th>IP</th></tr></thead>
+          <tbody>${ipRows}</tbody>
         </table>
       </div>
-      <div class="task-cisco">R1(config)# ${routeR1}
-R2(config)# ${routeR2}</div>
+      <div class="task-cisco">${routes}</div>
     </div>
   `;
 }
@@ -695,7 +956,7 @@ function parseUserSubnets() {
     const prefixOk = prefix === seg.prefix;
     const broadcastOk = expectedBroadcast === broadcast;
 
-    if (!prefixOk) messages.push(`${seg.title}: для ${seg.hosts} хостов нужен префикс ${prefixLabel(seg.prefix)}, а не ${prefixLabel(prefix)}.`);
+    if (!prefixOk) messages.push(`${seg.title}: для ${seg.hosts} usable-адресов нужен префикс ${prefixLabel(seg.prefix)}, а не ${prefixLabel(prefix)}.`);
     if (!isNetworkAddress) messages.push(`${seg.title}: ${intToIp(network)} не является адресом сети для ${prefixLabel(prefix)}.`);
     if (!broadcastOk) messages.push(`${seg.title}: broadcast должен быть ${intToIp(expectedBroadcast)}.`);
     if (!insidePool) {
@@ -713,21 +974,17 @@ function parseUserSubnets() {
 }
 
 function getIpValues() {
-  return {
-    r1Lan: parseIp(readTaskValue('ip-r1Lan')),
-    pcA: parseIp(readTaskValue('ip-pcA')),
-    r1Link: parseIp(readTaskValue('ip-r1Link')),
-    r2Link: parseIp(readTaskValue('ip-r2Link')),
-    r2Lan: parseIp(readTaskValue('ip-r2Lan')),
-    pcB: parseIp(readTaskValue('ip-pcB'))
-  };
+  return Object.fromEntries(subnetTask.ipRows.map(row => [
+    row.key,
+    parseIp(readTaskValue(`ip-${row.key}`))
+  ]));
 }
 
-function readRoute(router) {
+function readRoute(routeId) {
   return {
-    network: parseIp(readTaskValue(`route-${router}-network`)),
-    maskPrefix: parseMaskPrefix(readTaskValue(`route-${router}-mask`)),
-    next: parseIp(readTaskValue(`route-${router}-next`))
+    network: parseIp(readTaskValue(`route-${routeId}-network`)),
+    maskPrefix: parseMaskPrefix(readTaskValue(`route-${routeId}-mask`)),
+    next: parseIp(readTaskValue(`route-${routeId}-next`))
   };
 }
 
@@ -739,7 +996,7 @@ function isRouteCorrect(route, targetSubnet, expectedNextHop) {
 }
 
 function isUsableInSubnet(ip, subnet) {
-  return ip > subnet.network && ip < subnet.broadcast;
+  return ip != null && subnet && ip > subnet.network && ip < subnet.broadcast;
 }
 
 function readTaskValue(id) {
@@ -767,7 +1024,7 @@ function taskGrade(points) {
 function allocateRecommended(baseNetwork, segments) {
   let cursor = baseNetwork;
   return [...segments]
-    .sort((a, b) => a.prefix - b.prefix)
+    .sort((a, b) => a.prefix - b.prefix || a.title.localeCompare(b.title))
     .map(seg => {
       const size = blockSize(seg.prefix);
       const network = alignUp(cursor, size);
@@ -890,12 +1147,26 @@ function segmentTitle(id) {
   return subnetTask.segments.find(seg => seg.id === id)?.title || id;
 }
 
+function blockStepsText() {
+  const prefixes = [...new Set(subnetTask.segments.map(seg => seg.prefix))].sort((a, b) => a - b);
+  return prefixes.map(prefix => `${prefixLabel(prefix)} шаг ${blockSize(prefix)}`).join(', ');
+}
+
+function ipKey(owner, segmentId) {
+  return `${owner.toLowerCase()}-${segmentId}`;
+}
+
 function round1(value) {
   return Math.round(value * 10) / 10;
 }
 
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomEven(min, max) {
+  const value = randomInt(Math.ceil(min / 2), Math.floor(max / 2)) * 2;
+  return Math.min(value, max);
 }
 
 function randomFrom(items) {
