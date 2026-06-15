@@ -9,6 +9,7 @@ let startTime = null;
 let answered  = false;
 let showHints = false;
 let currentMode = 'full';
+let examSession = null;
 const STORAGE_KEY = 'net_quiz_sessions';
 const ACTIVE_STORAGE_KEY = 'net_quiz_active_session';
 
@@ -27,6 +28,12 @@ const TEST_MODES = {
     title: 'Термины',
     description: 'Определения, уровни, протоколы, устройства',
     filter: q => q.topic === 'Термины и определения'
+  },
+  exam: {
+    title: 'Экзамен',
+    description: '15 одиночных, 4 множественных и задача',
+    examSize: 20,
+    filter: q => q.type === 'single_choice' || q.type === 'multi_choice'
   }
 };
 
@@ -61,6 +68,12 @@ function showScreen(id) {
 // ══════════════════════════════════════════════════════════════
 function startQuiz(modeId = currentMode) {
   currentMode = TEST_MODES[modeId] ? modeId : 'full';
+  if (currentMode === 'exam') {
+    startExam();
+    return;
+  }
+
+  examSession = null;
   const pool = getModeQuestions(currentMode);
   if (!pool.length) {
     showToast('В этом режиме пока нет вопросов');
@@ -97,11 +110,248 @@ function selectMode(modeId) {
 function updateModeStats() {
   Object.keys(TEST_MODES).forEach(modeId => {
     const el = document.getElementById(`mode-count-${modeId}`);
-    if (el) el.textContent = getModeQuestions(modeId).length;
+    if (el) el.textContent = TEST_MODES[modeId].examSize || getModeQuestions(modeId).length;
   });
 
   const totalEl = document.getElementById('q-total');
-  if (totalEl) totalEl.textContent = getModeQuestions(currentMode).length;
+  if (totalEl) totalEl.textContent = TEST_MODES[currentMode]?.examSize || getModeQuestions(currentMode).length;
+}
+
+function startExam() {
+  const singleQuestions = questions.filter(q => q.type === 'single_choice');
+  const multiQuestions = questions.filter(q => q.type === 'multi_choice');
+
+  if (singleQuestions.length < 15 || multiQuestions.length < 4) {
+    showToast('Недостаточно вопросов для режима экзамена');
+    return;
+  }
+
+  const singles = pickDistributedQuestions(singleQuestions, 15);
+  const multis = pickDistributedQuestions(multiQuestions, 4);
+
+  currentMode = 'exam';
+  shuffled = [...singles, ...multis].map(prepareQuestionForSession);
+  current = 0;
+  results = [];
+  startTime = Date.now();
+  answered = false;
+  showHints = Boolean(document.getElementById('show-hints')?.checked);
+  examSession = {
+    startedAt: startTime,
+    singleCount: 15,
+    multiCount: 4,
+    singlePoints: 4,
+    multiPoints: 5,
+    taskPoints: null,
+    saved: false,
+    final: null
+  };
+
+  selectMode('exam');
+  buildProgressBar();
+  saveActiveSession();
+  showScreen('quiz-screen');
+  renderQuestion();
+}
+
+function pickDistributedQuestions(pool, count) {
+  const groups = new Map();
+  shuffle([...pool]).forEach(q => {
+    if (!groups.has(q.topic)) groups.set(q.topic, []);
+    groups.get(q.topic).push(q);
+  });
+
+  const topics = shuffle([...groups.keys()]);
+  const picked = [];
+  while (picked.length < count && topics.length) {
+    let moved = false;
+    for (const topic of topics) {
+      const group = groups.get(topic);
+      if (group?.length) {
+        picked.push(group.pop());
+        moved = true;
+        if (picked.length >= count) break;
+      }
+    }
+    if (!moved) break;
+  }
+
+  if (picked.length < count) {
+    const pickedIds = new Set(picked.map(q => q.id));
+    const rest = shuffle(pool.filter(q => !pickedIds.has(q.id)));
+    picked.push(...rest.slice(0, count - picked.length));
+  }
+
+  return picked;
+}
+
+function beginExamTask() {
+  if (!examSession) {
+    showResults();
+    return;
+  }
+
+  examSession.quizResults = [...results];
+  examSession.quizQuestionIds = shuffled.map(q => q.id);
+  saveActiveSession();
+  showToast('Тестовая часть завершена. Осталась задача на 20 баллов.');
+  startSubnetTask({ examMode: true });
+}
+
+function finishExamFromTask(taskPoints) {
+  if (!examSession || examSession.saved) return null;
+
+  const singleCorrect = results.slice(0, examSession.singleCount).filter(Boolean).length;
+  const multiCorrect = results.slice(examSession.singleCount, examSession.singleCount + examSession.multiCount).filter(Boolean).length;
+  const singleScore = singleCorrect * examSession.singlePoints;
+  const multiScore = multiCorrect * examSession.multiPoints;
+  const quizScore = singleScore + multiScore;
+  const totalPoints = roundExamPoints(quizScore + taskPoints);
+  const score = examGrade(totalPoints);
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  const topicMap = {
+    'Одиночный выбор': { ok: singleScore, total: 60 },
+    'Множественный выбор': { ok: multiScore, total: 20 },
+    'Задача 8 лабы': { ok: taskPoints, total: 20 }
+  };
+
+  examSession.taskPoints = taskPoints;
+  examSession.saved = true;
+  examSession.final = {
+    singleCorrect,
+    multiCorrect,
+    singleScore,
+    multiScore,
+    quizScore,
+    taskPoints,
+    totalPoints,
+    score,
+    elapsed,
+    topicMap
+  };
+
+  saveSession({
+    correct: totalPoints,
+    total: 100,
+    score,
+    elapsed,
+    topicMap,
+    date: Date.now(),
+    modeId: 'exam',
+    modeName: 'Экзамен',
+    completed: true
+  });
+  clearActiveSession();
+  renderHistoryTable();
+  return examSession.final;
+}
+
+function showExamResultScreen() {
+  if (!examSession?.final) return;
+  const final = examSession.final;
+
+  document.getElementById('res-score').textContent = final.score;
+  document.getElementById('res-score').className = `score-display score-${scoreClass(final.score)}`;
+  document.getElementById('res-comment').textContent =
+    `Экзамен: ${final.totalPoints}/100 баллов. ${examComment(final.score)}`;
+  document.getElementById('res-correct').textContent =
+    `${final.singleCorrect}/15 + ${final.multiCorrect}/4`;
+  document.getElementById('res-time').textContent = formatTime(final.elapsed);
+  document.getElementById('res-percent').textContent = `${final.totalPoints}/100`;
+
+  const topicEl = document.getElementById('res-topics');
+  topicEl.innerHTML = Object.entries(final.topicMap).map(([topic, data]) => {
+    const pct = Math.round(data.ok / data.total * 100);
+    const cls = pct >= 80 ? 'topic-good' : pct >= 50 ? 'topic-mid' : 'topic-bad';
+    return `<div class="topic-row ${cls}">
+      <span class="topic-name">${topic}</span>
+      <span class="topic-stat">${data.ok}/${data.total} (${pct}%)</span>
+      <div class="topic-bar"><div class="topic-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  const resSeg = document.getElementById('result-progress');
+  resSeg.innerHTML = [
+    ...results.map(r => `<div class="progress-seg ${r ? 'seg-correct' : 'seg-wrong'}"></div>`),
+    `<div class="progress-seg ${final.taskPoints >= 12 ? 'seg-correct' : 'seg-wrong'}"></div>`
+  ].join('');
+
+  renderHistoryTable();
+  showScreen('result-screen');
+}
+
+function saveInterruptedExamSession() {
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  const singleDone = Math.min(results.length, 15);
+  const multiDone = Math.max(0, results.length - 15);
+  const singleCorrect = results.slice(0, 15).filter(Boolean).length;
+  const multiCorrect = results.slice(15, 19).filter(Boolean).length;
+  const points = singleCorrect * 4 + multiCorrect * 5;
+
+  saveSession({
+    correct: points,
+    total: 100,
+    score: 0,
+    elapsed,
+    topicMap: {
+      'Одиночный выбор': { ok: singleCorrect * 4, total: 60 },
+      'Множественный выбор': { ok: multiCorrect * 5, total: 20 },
+      'Задача 8 лабы': { ok: 0, total: 20 }
+    },
+    date: Date.now(),
+    modeId: 'exam',
+    modeName: `Экзамен: прерван (${singleDone + multiDone}/19 тестов)`,
+    completed: false
+  });
+}
+
+function exitExamToMenu() {
+  if (results.length > 0) {
+    const ok = confirm('Сохранить текущий прогресс экзамена как прерванный и выйти в меню?');
+    if (!ok) return;
+    saveInterruptedExamSession();
+  }
+
+  clearActiveSession();
+  examSession = null;
+  shuffled = [];
+  current = 0;
+  results = [];
+  answered = false;
+  renderHistoryTable();
+  showScreen('start-screen');
+}
+
+function abortExamFromTask() {
+  saveInterruptedExamSession();
+  clearActiveSession();
+  examSession = null;
+  shuffled = [];
+  current = 0;
+  results = [];
+  answered = false;
+  renderHistoryTable();
+  showScreen('start-screen');
+}
+
+function examGrade(points) {
+  if (points >= 90) return 5;
+  if (points >= 80) return 4;
+  if (points >= 60) return 3;
+  if (points >= 40) return 2;
+  if (points > 0) return 1;
+  return 0;
+}
+
+function examComment(score) {
+  if (score >= 5) return 'Уровень уверенной пятёрки.';
+  if (score === 4) return 'Уровень четвёрки: тестовая база закрыта, задача добавила баллы.';
+  if (score === 3) return 'Минимальный проходной уровень: надо добрать слабые темы.';
+  return 'Экзамен пока не закрыт, нужно повторить базу и адресацию.';
+}
+
+function roundExamPoints(value) {
+  return Math.round(value * 10) / 10;
 }
 
 function shuffle(arr) {
@@ -231,7 +481,8 @@ function recordAnswer(isCorrect) {
   document.getElementById('btn-next').style.display = 'inline-flex';
 
   if (current + 1 >= shuffled.length) {
-    document.getElementById('btn-next').textContent = 'Завершить →';
+    document.getElementById('btn-next').textContent =
+      currentMode === 'exam' ? 'Перейти к задаче →' : 'Завершить →';
   }
 }
 
@@ -241,7 +492,8 @@ function recordAnswer(isCorrect) {
 function nextQuestion() {
   current++;
   if (current >= shuffled.length) {
-    showResults();
+    if (currentMode === 'exam') beginExamTask();
+    else showResults();
   } else {
     saveActiveSession();
     renderQuestion();
@@ -311,6 +563,11 @@ function showResults() {
 }
 
 function exitToMenu() {
+  if (currentMode === 'exam') {
+    exitExamToMenu();
+    return;
+  }
+
   if (results.length > 0) {
     const ok = confirm('Сохранить текущий результат и выйти в меню?');
     if (!ok) return;
@@ -467,6 +724,7 @@ function saveActiveSession(nextCurrent = current) {
     results,
     startTime,
     showHints,
+    examSession: currentMode === 'exam' ? examSession : null,
     savedAt: Date.now()
   };
 
@@ -493,6 +751,9 @@ function restoreActiveSession() {
   startTime = Number(session.startTime) || Date.now();
   showHints = Boolean(session.showHints);
   currentMode = TEST_MODES[session.modeId] ? session.modeId : 'full';
+  examSession = currentMode === 'exam' && session.examSession
+    ? session.examSession
+    : null;
   answered = false;
 
   const hintsToggle = document.getElementById('show-hints');

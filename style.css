@@ -113,10 +113,10 @@ body::before {
 
 .mode-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: .75rem;
   margin: -0.6rem auto 1.6rem;
-  max-width: 720px;
+  max-width: 860px;
 }
 
 .mode-card {
@@ -808,6 +808,12 @@ body::before {
   color: var(--text-dim);
 }
 
+@media (max-width: 820px) {
+  .mode-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 720px) {
   .mode-grid {
     grid-template-columns: 1fr;
@@ -948,6 +954,129 @@ body::before {
 
 .task-card p {
   line-height: 1.55;
+}
+
+.task-statement {
+  border-color: rgba(0,212,255,.34);
+  background: linear-gradient(180deg, rgba(0,212,255,.08), rgba(21,30,48,.96));
+}
+
+.task-kicker {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: .74rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: .35rem;
+}
+
+.task-statement h3 {
+  font-size: 1.15rem;
+  line-height: 1.35;
+  margin-bottom: .9rem;
+}
+
+.task-topology {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr auto 1fr auto;
+  align-items: center;
+  gap: .45rem;
+  margin: .85rem 0 1rem;
+  font-family: var(--mono);
+}
+
+.task-topology span {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 34px;
+  padding: .4rem .65rem;
+  border: 1px solid rgba(0,212,255,.28);
+  border-radius: var(--radius);
+  background: #090f1d;
+  color: var(--text-bright);
+  font-size: .82rem;
+}
+
+.task-topology i {
+  position: relative;
+  color: var(--text-dim);
+  font-size: .72rem;
+  font-style: normal;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.task-topology i::before {
+  content: '';
+  position: absolute;
+  left: .25rem;
+  right: .25rem;
+  top: 50%;
+  height: 1px;
+  background: var(--border);
+  z-index: -1;
+}
+
+.task-brief-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: .9rem 0;
+}
+
+.task-brief-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(9,15,29,.72);
+  padding: .85rem .95rem;
+}
+
+.task-brief-block h4 {
+  color: var(--text-bright);
+  font-size: .88rem;
+  margin-bottom: .45rem;
+}
+
+.task-brief-block ul {
+  margin-left: 1rem;
+  color: var(--text);
+  font-size: .86rem;
+  line-height: 1.5;
+}
+
+.task-brief-block li + li {
+  margin-top: .25rem;
+}
+
+.task-explain {
+  background: rgba(0,212,255,.055);
+  border: 1px solid rgba(0,212,255,.18);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--text);
+  font-size: .9rem;
+  line-height: 1.58;
+  padding: .8rem .95rem;
+  margin: .8rem 0;
+}
+
+.task-scoreline {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: .45rem;
+  margin-top: .85rem;
+}
+
+.task-scoreline span {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg3);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: .72rem;
+  text-align: center;
+  padding: .45rem .35rem;
 }
 
 .task-grid {
@@ -1134,6 +1263,20 @@ body::before {
   .task-entry,
   .task-topbar {
     flex-direction: column;
+  }
+
+  .task-topology {
+    grid-template-columns: 1fr;
+    gap: .35rem;
+  }
+
+  .task-topology i::before {
+    display: none;
+  }
+
+  .task-brief-grid,
+  .task-scoreline {
+    grid-template-columns: 1fr;
   }
 
   .task-grid,

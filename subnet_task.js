@@ -1,17 +1,26 @@
 let subnetTask = null;
 
-function startSubnetTask() {
+function startSubnetTask(options = {}) {
   const isTaskScreenActive = document.getElementById('subnet-task-screen')?.classList.contains('active');
   if (isTaskScreenActive && subnetTask?.dirty && !subnetTask.saved) {
     const ok = confirm('Создать новую задачу? Текущие введённые ответы будут потеряны.');
     if (!ok) return;
   }
   subnetTask = generateSubnetTask();
+  subnetTask.examMode = Boolean(options.examMode);
   renderSubnetTask();
   showScreen('subnet-task-screen');
 }
 
 function exitSubnetTask() {
+  if (subnetTask?.examMode) {
+    const ok = confirm('Прервать экзамен и сохранить его как незавершённый?');
+    if (!ok) return;
+    if (typeof abortExamFromTask === 'function') abortExamFromTask();
+    else showScreen('start-screen');
+    return;
+  }
+
   if (subnetTask?.dirty && !subnetTask.saved) {
     const ok = confirm('Выйти в меню? Текущая задача не будет сохранена.');
     if (!ok) return;
@@ -77,37 +86,9 @@ function generateSubnetTask() {
 
 function renderSubnetTask() {
   const el = document.getElementById('subnet-task-container');
-  const { pool, segments } = subnetTask;
 
   el.innerHTML = `
-    <div class="task-card">
-      <h3>1. Условие</h3>
-      <p>Топология: <strong>PC-A — R1 — R2 — PC-B</strong>. Нужно разделить пул адресов, назначить IP-адреса устройствам, указать шлюзы на ПК и статические маршруты на роутерах.</p>
-      <div class="task-grid">
-        <div class="task-mini">
-          <div class="task-mini-label">Исходный пул</div>
-          <div class="task-mini-value">${subnetLabel(pool)}</div>
-        </div>
-        <div class="task-mini">
-          <div class="task-mini-label">Схема</div>
-          <div class="task-mini-value">2 LAN + 1 link</div>
-        </div>
-        <div class="task-mini">
-          <div class="task-mini-label">Итог</div>
-          <div class="task-mini-value">20 баллов</div>
-        </div>
-      </div>
-      <div class="task-table-wrap">
-        <table class="task-table">
-          <thead><tr><th>Сегмент</th><th>Что подключено</th><th>Минимум хостов</th></tr></thead>
-          <tbody>
-            ${segments.map(seg => `<tr><td>${seg.title}</td><td>${seg.description}</td><td>${seg.hosts}</td></tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-      <div class="task-hint">Начинай не с IP-адресов устройств, а с расчёта подсетей. Для VLSM подсети обычно выделяют от самой большой к самой маленькой.</div>
-    </div>
-
+    ${renderProblemStatement()}
     ${renderMaskStage()}
     ${renderSubnetStage()}
     ${renderIpStage()}
@@ -117,11 +98,100 @@ function renderSubnetTask() {
   `;
 }
 
+function renderProblemStatement() {
+  const { pool, segments } = subnetTask;
+  const lanA = segments.find(seg => seg.id === 'lanA');
+  const lanB = segments.find(seg => seg.id === 'lanB');
+  const link = segments.find(seg => seg.id === 'link');
+
+  return `
+    <div class="task-card task-statement">
+      <div class="task-kicker">Условие задачи</div>
+      <h3>Дан пул ${subnetLabel(pool)}. Нужно построить адресный план для сети PC-A — R1 — R2 — PC-B</h3>
+
+      <div class="task-topology" aria-label="Топология задачи">
+        <span>PC-A</span>
+        <i>LAN-A</i>
+        <span>R1</span>
+        <i>R1-R2</i>
+        <span>R2</span>
+        <i>LAN-B</i>
+        <span>PC-B</span>
+      </div>
+
+      <div class="task-brief-grid">
+        <div class="task-brief-block">
+          <h4>Что дано</h4>
+          <ul>
+            <li>Один общий пул адресов: <strong>${subnetLabel(pool)}</strong>.</li>
+            <li>Две пользовательские LAN-сети и один линк между роутерами.</li>
+            <li>Для каждой сети известно минимальное число хостов.</li>
+          </ul>
+        </div>
+        <div class="task-brief-block">
+          <h4>Что нужно сделать</h4>
+          <ul>
+            <li>Разбить пул на подсети через VLSM, без пересечений.</li>
+            <li>Назначить IP-адреса ПК и интерфейсам R1/R2.</li>
+            <li>Указать default gateway на ПК и статические маршруты на роутерах.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="task-table-wrap">
+        <table class="task-table">
+          <thead><tr><th>Сегмент</th><th>Что подключено</th><th>Минимум хостов</th><th>Что это значит</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>${lanA.title}</td>
+              <td>${lanA.description}</td>
+              <td>${lanA.hosts}</td>
+              <td>Нужна подсеть для PC-A и интерфейса R1, плюс запас под указанное число хостов.</td>
+            </tr>
+            <tr>
+              <td>${lanB.title}</td>
+              <td>${lanB.description}</td>
+              <td>${lanB.hosts}</td>
+              <td>Отдельная LAN за R2. Она не должна пересекаться с LAN-A.</td>
+            </tr>
+            <tr>
+              <td>${link.title}</td>
+              <td>${link.description}</td>
+              <td>${link.hosts}</td>
+              <td>Point-to-point сеть только для двух интерфейсов: R1 link и R2 link.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="task-explain">
+        <strong>Идея задачи:</strong> преподаватель проверяет не одну команду, а весь адресный план.
+        Сначала выбирается размер подсетей, потом сами диапазоны, потом IP устройств, потом шлюзы и маршруты.
+        Если перепутать порядок, легко назначить адрес из чужой подсети или прописать next-hop, до которого роутер физически не может добраться.
+      </div>
+
+      <div class="task-scoreline">
+        <span>Маски: 4</span>
+        <span>Подсети: 4</span>
+        <span>IP: 4</span>
+        <span>Шлюзы: 3</span>
+        <span>Маршруты: 4</span>
+        <span>Аккуратность: 1</span>
+      </div>
+    </div>
+  `;
+}
+
 function renderMaskStage() {
   return `
     <div class="task-card">
       <h3>2. Выбери маски</h3>
-      <div class="task-hint">Формула usable-адресов: <strong>2^h - 2</strong>, где h — число бит под хосты. Префикс: <strong>32 - h</strong>. Выбирай минимальную подходящую подсеть.</div>
+      <div class="task-explain">
+        На этом этапе ты ещё не выбираешь конкретные адреса вида 192.168.x.x.
+        Нужно только понять, какой размер подсети нужен каждому сегменту.
+        Например, если в LAN нужно 50 хостов, /27 не подойдёт, потому что даёт только 30 usable-адресов.
+      </div>
+      <div class="task-hint">Формула usable-адресов: <strong>2^h - 2</strong>, где h — число бит под хосты. Префикс: <strong>32 - h</strong>. Выбирай минимальную подходящую подсеть: не меньше нужного, но и не слишком большую.</div>
       <div class="task-table-wrap">
         <table class="task-table">
           <thead><tr><th>Сегмент</th><th>Нужно хостов</th><th>Префикс</th><th>Маска</th></tr></thead>
@@ -146,7 +216,12 @@ function renderSubnetStage() {
   return `
     <div class="task-card">
       <h3>3. Разложи подсети внутри пула</h3>
-      <div class="task-hint">Следующая подсеть начинается после broadcast предыдущей. Адрес сети должен попадать на границу блока: для /26 шаг 64, для /27 шаг 32, для /30 шаг 4.</div>
+      <div class="task-explain">
+        Теперь нужно взять общий пул и нарезать его на непересекающиеся диапазоны.
+        Важно: адрес сети — это не любой удобный адрес, а начало блока.
+        Broadcast — последний адрес этого блока. Обычным устройствам оба этих адреса назначать нельзя.
+      </div>
+      <div class="task-hint">Практичный порядок для VLSM: сначала самая большая LAN, потом меньшая LAN, потом /30 линк. Следующая подсеть начинается после broadcast предыдущей. Адрес сети должен попадать на границу блока: для /26 шаг 64, для /27 шаг 32, для /30 шаг 4.</div>
       <div class="task-table-wrap">
         <table class="task-table">
           <thead><tr><th>Сегмент</th><th>Сеть</th><th>Префикс</th><th>Broadcast</th></tr></thead>
@@ -180,6 +255,12 @@ function renderIpStage() {
   return `
     <div class="task-card">
       <h3>4. Назначь IP-адреса устройствам</h3>
+      <div class="task-explain">
+        Здесь ты заполняешь адреса конкретных интерфейсов.
+        IP устройства должен лежать внутри той подсети, к которой это устройство подключено.
+        У роутера R1 будет два адреса: один в LAN-A, второй на линке R1-R2.
+        У R2 тоже два адреса: один на линке, второй в LAN-B.
+      </div>
       <div class="task-hint">Можно выбрать любые usable-адреса внутри нужной подсети. Нельзя использовать адрес сети, broadcast и одинаковый IP на двух устройствах.</div>
       <div class="task-table-wrap">
         <table class="task-table">
@@ -198,6 +279,11 @@ function renderGatewayStage() {
   return `
     <div class="task-card">
       <h3>5. Укажи шлюзы на ПК</h3>
+      <div class="task-explain">
+        Шлюз нужен только конечным ПК, чтобы отправлять пакеты в чужие сети.
+        ПК не указывает адрес второго роутера и не указывает сеть целиком.
+        Он указывает ближайший интерфейс своего роутера в своей LAN.
+      </div>
       <div class="task-hint">Default gateway хоста — это IP интерфейса маршрутизатора в той же LAN. PC-A указывает на R1 LAN-A, PC-B указывает на R2 LAN-B.</div>
       <div class="task-table-wrap">
         <table class="task-table">
@@ -217,7 +303,13 @@ function renderRouteStage() {
   return `
     <div class="task-card">
       <h3>6. Пропиши статические маршруты</h3>
-      <div class="task-hint">Connected-сети прописывать не нужно. R1 нужен маршрут к LAN-B через IP R2 на линке. R2 нужен маршрут к LAN-A через IP R1 на линке.</div>
+      <div class="task-explain">
+        Каждый роутер сам знает только directly connected сети: свои LAN и общий линк.
+        R1 не знает, где находится LAN-B, пока ты не укажешь маршрут через R2.
+        R2 не знает LAN-A, пока ты не укажешь маршрут через R1.
+        Next-hop должен быть адресом соседнего роутера на общей сети R1-R2.
+      </div>
+      <div class="task-hint">Connected-сети прописывать не нужно. R1 нужен маршрут к LAN-B через IP R2 на линке. R2 нужен маршрут к LAN-A через IP R1 на линке. В Cisco это выглядит как: <strong>ip route сеть маска next-hop</strong>.</div>
       <div class="task-table-wrap">
         <table class="task-table">
           <thead><tr><th>Роутер</th><th>Сеть назначения</th><th>Маска</th><th>Next-hop</th></tr></thead>
@@ -233,12 +325,18 @@ function renderRouteStage() {
 }
 
 function renderFinalStage() {
+  const buttonText = subnetTask.examMode ? 'Проверить задачу и завершить экзамен' : 'Проверить всю задачу';
   return `
     <div class="task-card">
       <h3>7. Итоговая проверка</h3>
+      <div class="task-explain">
+        Финальная проверка смотрит не только “похожи ли числа на правильные”.
+        Она проверяет логику: достаточно ли хостов, нет ли пересечений подсетей,
+        не назначены ли network/broadcast адреса устройствам, достижим ли next-hop и есть ли обратный маршрут.
+      </div>
       <div class="task-hint">Итог оценивается как экзаменационная задача: маски, подсети, IP-адреса, шлюзы, маршруты и аккуратность адресного плана.</div>
       <div class="task-actions">
-        <button class="btn-primary" type="button" onclick="checkSubnetTaskFinal()">Проверить всю задачу</button>
+        <button class="btn-primary" type="button" onclick="checkSubnetTaskFinal()">${buttonText}</button>
       </div>
       <div class="task-feedback" id="task-feedback-final"></div>
     </div>
@@ -472,7 +570,19 @@ function checkSubnetTaskFinal() {
   finalEl.innerHTML = html;
 
   if (!subnetTask.saved) {
-    saveSubnetTaskResult(total);
+    if (subnetTask.examMode && typeof finishExamFromTask === 'function') {
+      const examFinal = finishExamFromTask(total);
+      if (examFinal) {
+        finalEl.innerHTML += `
+          <div class="task-actions">
+            <button class="btn-primary" type="button" onclick="showExamResultScreen()">Показать итог экзамена</button>
+            <span class="task-mini-value">${examFinal.totalPoints} / 100 баллов</span>
+          </div>
+        `;
+      }
+    } else {
+      saveSubnetTaskResult(total);
+    }
     subnetTask.saved = true;
     subnetTask.dirty = false;
   }
