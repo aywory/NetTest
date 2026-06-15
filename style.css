@@ -539,6 +539,32 @@ body::before {
   color: var(--red);
 }
 
+.answer-explanation {
+  display: none;
+  margin-top: .9rem;
+  padding: .8rem 1rem;
+  border: 1px solid rgba(255,209,102,.28);
+  border-left: 3px solid var(--yellow);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: rgba(255,209,102,.08);
+  color: var(--text);
+  font-size: .9rem;
+  line-height: 1.55;
+}
+
+.answer-explanation.show {
+  display: block;
+}
+
+.answer-explanation-label {
+  color: var(--yellow);
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: .35rem;
+}
+
 /* ── NEXT BUTTON ──────────────────────────────────────────────────────── */
 #btn-next {
   display: none;

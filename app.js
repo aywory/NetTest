@@ -637,6 +637,17 @@ function scoreComment(s) {
   return comments[s] || '';
 }
 
+function renderAnswerExplanation(qId, isCorrect, explanation) {
+  if (isCorrect || !explanation) return;
+  const el = document.getElementById(`explanation-${qId}`);
+  if (!el) return;
+  el.className = 'answer-explanation show';
+  el.innerHTML = `
+    <div class="answer-explanation-label">Пояснение</div>
+    <div>${explanation}</div>
+  `;
+}
+
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
   const s = sec % 60;

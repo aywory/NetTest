@@ -12,14 +12,15 @@ function renderSingleChoice(q, container) {
       `).join('')}
     </div>
     <button class="btn-submit" id="btn-submit-${q.id}">Ответить</button>
+    <div class="answer-explanation" id="explanation-${q.id}"></div>
   `;
 
   document.getElementById(`btn-submit-${q.id}`).addEventListener('click',
-    () => submitSingleChoice(q.id, q.answer)
+    () => submitSingleChoice(q.id, q.answer, q.explanation)
   );
 }
 
-function submitSingleChoice(qId, correctAnswer) {
+function submitSingleChoice(qId, correctAnswer, explanation = '') {
   const selected = document.querySelector(`input[name="q${qId}"]:checked`);
   if (!selected) { showToast('Выбери вариант ответа'); return; }
 
@@ -36,5 +37,6 @@ function submitSingleChoice(qId, correctAnswer) {
   });
 
   document.getElementById(`btn-submit-${qId}`).disabled = true;
+  renderAnswerExplanation(qId, isCorrect, explanation);
   recordAnswer(isCorrect);
 }

@@ -30,10 +30,11 @@ function renderMatching(q, container) {
       </div>
     </div>
     <button class="btn-submit" id="btn-submit-${q.id}">Проверить</button>
+    <div class="answer-explanation" id="explanation-${q.id}"></div>
   `;
 
   document.getElementById(`btn-submit-${q.id}`).addEventListener('click',
-    () => submitMatching(q.id, q.pairs.length)
+    () => submitMatching(q.id, q.pairs.length, q.explanation)
   );
 }
 
@@ -67,7 +68,7 @@ function dropMatch(e, targetIndex) {
   zone.appendChild(draggedEl);
 }
 
-function submitMatching(qId, pairCount) {
+function submitMatching(qId, pairCount, explanation = '') {
   const zones = document.querySelectorAll('.match-drop-zone');
   let allFilled = true;
 
@@ -90,5 +91,7 @@ function submitMatching(qId, pairCount) {
 
   document.getElementById(`btn-submit-${qId}`).disabled = true;
   document.querySelectorAll('.match-right-item').forEach(el => el.setAttribute('draggable', false));
-  recordAnswer(correct === pairCount);
+  const isCorrect = correct === pairCount;
+  renderAnswerExplanation(qId, isCorrect, explanation);
+  recordAnswer(isCorrect);
 }

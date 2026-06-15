@@ -19,10 +19,11 @@ function renderOrdering(q, container) {
       `).join('')}
     </div>
     <button class="btn-submit" id="btn-submit-${q.id}">Проверить</button>
+    <div class="answer-explanation" id="explanation-${q.id}"></div>
   `;
 
   document.getElementById(`btn-submit-${q.id}`).addEventListener('click',
-    () => submitOrdering(q.id, q.correct_order)
+    () => submitOrdering(q.id, q.correct_order, q.explanation)
   );
 }
 
@@ -63,7 +64,7 @@ function orderDrop(e) {
   else list.insertBefore(orderDragSrc, target);
 }
 
-function submitOrdering(qId, correctOrder) {
+function submitOrdering(qId, correctOrder, explanation = '') {
   const list = document.getElementById(`ordering-${qId}`);
   const items = [...list.querySelectorAll('.order-item')];
   const userOrder = items.map(el => parseInt(el.dataset.orig));
@@ -77,5 +78,6 @@ function submitOrdering(qId, correctOrder) {
   });
 
   document.getElementById(`btn-submit-${qId}`).disabled = true;
+  renderAnswerExplanation(qId, isCorrect, explanation);
   recordAnswer(isCorrect);
 }

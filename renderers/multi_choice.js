@@ -13,14 +13,15 @@ function renderMultiChoice(q, container) {
       `).join('')}
     </div>
     <button class="btn-submit" id="btn-submit-${q.id}">Ответить</button>
+    <div class="answer-explanation" id="explanation-${q.id}"></div>
   `;
 
   document.getElementById(`btn-submit-${q.id}`).addEventListener('click',
-    () => submitMultiChoice(q.id, q.answers)
+    () => submitMultiChoice(q.id, q.answers, q.explanation)
   );
 }
 
-function submitMultiChoice(qId, correctAnswers) {
+function submitMultiChoice(qId, correctAnswers, explanation = '') {
   const checked = Array.from(document.querySelectorAll(`input[name="q${qId}"]:checked`))
     .map(el => parseInt(el.value));
 
@@ -43,5 +44,6 @@ function submitMultiChoice(qId, correctAnswers) {
   });
 
   document.getElementById(`btn-submit-${qId}`).disabled = true;
+  renderAnswerExplanation(qId, isCorrect, explanation);
   recordAnswer(isCorrect);
 }
