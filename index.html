@@ -56,6 +56,14 @@
       <button class="btn-primary" onclick="startQuiz()">
         ▶&nbsp; Начать тест
       </button>
+
+      <div class="task-entry">
+        <div>
+          <div class="task-entry-title">Задача 8 лабы: адресация и маршруты</div>
+          <div class="task-entry-desc">Тренировка с подсказками, проверкой этапов и разбором на 20 баллов.</div>
+        </div>
+        <button class="btn-ghost" type="button" onclick="startSubnetTask()">Открыть тренажёр</button>
+      </div>
     </div>
 
     <!-- History -->
@@ -95,6 +103,30 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!--  SUBNET TASK SCREEN                                                -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="screen" id="subnet-task-screen">
+    <div class="progress-wrapper">
+      <div class="progress-meta">
+        <span>Задача 8 лабы // VLSM + статическая маршрутизация</span>
+        <button class="btn-ghost btn-menu" type="button" onclick="exitSubnetTask()">В меню</button>
+      </div>
+    </div>
+
+    <div class="task-body">
+      <div class="task-topbar">
+        <div>
+          <div class="section-title" style="margin:0 0 .35rem">Тренажёр с подсказками</div>
+          <h2>Распредели адреса и настрой маршруты</h2>
+        </div>
+        <button class="btn-ghost" type="button" onclick="startSubnetTask()">Новая задача</button>
+      </div>
+
+      <div id="subnet-task-container"></div>
+    </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
@@ -155,6 +187,7 @@
   <script src="renderers/ordering.js"></script>
   <script src="renderers/text_types.js"></script>
   <script src="app.js"></script>
+  <script src="subnet_task.js"></script>
 
 </body>
 </html>
