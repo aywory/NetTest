@@ -69,6 +69,14 @@
         </div>
         <button class="btn-ghost" type="button" onclick="startSubnetTask()">Открыть тренажёр</button>
       </div>
+
+      <div class="task-entry task-entry-v2">
+        <div>
+          <div class="task-entry-title">Тренажёр v2: таблицы маршрутизации</div>
+          <div class="task-entry-desc">Реальный формат задачи: схема Intranet, таблица каждого роутера и оборудование 1000Base-T.</div>
+        </div>
+        <button class="btn-ghost" type="button" onclick="startRoutingTaskV2()">Открыть v2</button>
+      </div>
     </div>
 
     <!-- History -->
@@ -135,6 +143,30 @@
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!--  ROUTING TASK V2 SCREEN                                            -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="screen" id="routing-task-v2-screen">
+    <div class="progress-wrapper">
+      <div class="progress-meta">
+        <span>Задача v2 // таблицы маршрутизации Intranet</span>
+        <button class="btn-ghost btn-menu" type="button" onclick="exitRoutingTaskV2()">В меню</button>
+      </div>
+    </div>
+
+    <div class="task-body">
+      <div class="task-topbar">
+        <div>
+          <div class="section-title" style="margin:0 0 .35rem">Реальный формат экзамена</div>
+          <h2>Составь таблицы маршрутизации по готовой схеме</h2>
+        </div>
+        <button class="btn-ghost" type="button" onclick="resetRoutingTaskV2()">Очистить ответы</button>
+      </div>
+
+      <div id="routing-task-v2-container"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
   <!--  RESULT SCREEN                                                      -->
   <!-- ══════════════════════════════════════════════════════════════════ -->
   <div class="screen" id="result-screen">
@@ -194,6 +226,7 @@
   <script src="renderers/text_types.js"></script>
   <script src="app.js"></script>
   <script src="subnet_task.js"></script>
+  <script src="routing_task_v2.js"></script>
 
 </body>
 </html>

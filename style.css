@@ -228,6 +228,15 @@ body::before {
   text-align: left;
 }
 
+.task-entry-v2 {
+  background: rgba(255,209,102,.06);
+  border-color: rgba(255,209,102,.25);
+}
+
+.task-entry-v2 .task-entry-title {
+  color: var(--yellow);
+}
+
 .task-entry-title {
   color: var(--text-bright);
   font-weight: 700;
@@ -958,6 +967,10 @@ body::before {
 .selfassess-confirmed-wrong   { border-color: var(--red)   !important; }
 
 /* ── SUBNET TASK TRAINER ─────────────────────────────────────────────── */
+#routing-task-v2-screen {
+  max-width: 1180px;
+}
+
 .task-body {
   padding: 1.5rem;
 }
@@ -1308,6 +1321,191 @@ body::before {
   white-space: pre;
 }
 
+/* ── ROUTING TASK V2 ───────────────────────────────────────────────── */
+.routing-v2-statement p {
+  color: var(--text);
+  font-size: .95rem;
+  line-height: 1.55;
+}
+
+.routing-v2-note {
+  border: 1px solid rgba(255,209,102,.24);
+  border-left: 3px solid var(--yellow);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: rgba(255,209,102,.07);
+  color: var(--text);
+  font-size: .9rem;
+  line-height: 1.55;
+  padding: .75rem .9rem;
+  margin-top: .85rem;
+}
+
+.routing-v2-diagram {
+  margin: 1rem 0;
+  overflow-x: auto;
+  border: 1px solid rgba(0,212,255,.22);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(rgba(0,212,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,.045) 1px, transparent 1px),
+    #070d19;
+  background-size: 28px 28px;
+}
+
+.routing-v2-diagram svg {
+  display: block;
+  width: 100%;
+  min-width: 820px;
+  height: auto;
+}
+
+.routing-v2-line {
+  stroke: var(--accent);
+  stroke-width: 3;
+  fill: none;
+}
+
+#routing-v2-arrow path {
+  fill: var(--accent);
+}
+
+.routing-v2-router circle {
+  fill: #0b1425;
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.routing-v2-router text {
+  fill: var(--text-bright);
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.routing-v2-cloud path {
+  fill: #0b1425;
+  stroke: var(--yellow);
+  stroke-width: 2.5;
+}
+
+.routing-v2-cloud text {
+  fill: var(--text-bright);
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.routing-v2-cloud .routing-v2-cloud-ip,
+.routing-v2-ip {
+  fill: var(--text);
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.routing-v2-muted {
+  color: var(--text-dim);
+  font-size: .9rem;
+  line-height: 1.5;
+  margin-bottom: .65rem;
+}
+
+.routing-v2-network-table .task-input {
+  min-width: 130px;
+}
+
+.routing-v2-router-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.routing-v2-router-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(9,15,29,.62);
+  overflow: hidden;
+}
+
+.routing-v2-router-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding: .7rem .85rem;
+  background: rgba(0,212,255,.055);
+}
+
+.routing-v2-router-head strong {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 1rem;
+}
+
+.routing-v2-router-head span {
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: .75rem;
+}
+
+.routing-v2-route-table {
+  min-width: 760px;
+}
+
+.routing-v2-route-table th:first-child,
+.routing-v2-route-table td:first-child {
+  width: 90px;
+}
+
+.routing-v2-route-table th:nth-child(2),
+.routing-v2-route-table td:nth-child(2),
+.routing-v2-route-table th:nth-child(3),
+.routing-v2-route-table td:nth-child(3) {
+  width: 190px;
+}
+
+.routing-v2-input {
+  min-width: 80px;
+}
+
+.routing-v2-equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.routing-v2-equipment-grid label > span {
+  display: block;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: .76rem;
+  letter-spacing: .04em;
+  margin-bottom: .45rem;
+}
+
+.routing-v2-textarea {
+  min-height: 140px;
+  margin-bottom: 0;
+}
+
+.routing-v2-score {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.routing-v2-solution {
+  margin-top: 1rem;
+}
+
+.routing-v2-solution h3 {
+  margin: 1.1rem 0 .65rem;
+}
+
+.routing-v2-solution-card {
+  margin-top: .9rem;
+}
+
 @media (max-width: 720px) {
   .task-entry,
   .task-topbar {
@@ -1349,6 +1547,11 @@ body::before {
 
   .task-grid,
   .task-score {
+    grid-template-columns: 1fr;
+  }
+
+  .routing-v2-equipment-grid,
+  .routing-v2-score {
     grid-template-columns: 1fr;
   }
 }
