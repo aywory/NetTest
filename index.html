@@ -87,6 +87,17 @@
         </div>
         <button class="btn-ghost" type="button" onclick="startRoutingTaskV2()">Открыть v2</button>
       </div>
+
+      <div class="task-entry task-entry-sort">
+        <div>
+          <div class="task-entry-title">Тренажёры соответствий</div>
+          <div class="task-entry-desc">
+            OSI, TCP/IP, протоколы, топологии, устройства и команды Cisco.
+            Наборов: <strong id="sort-trainer-count">—</strong>
+          </div>
+        </div>
+        <button class="btn-ghost" type="button" onclick="startSortTrainer()">Открыть</button>
+      </div>
     </div>
 
     <!-- History -->
@@ -173,6 +184,37 @@
       </div>
 
       <div id="routing-task-v2-container"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!--  SORT TRAINER SCREEN                                              -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="screen" id="sort-trainer-screen">
+    <div class="progress-wrapper">
+      <div class="progress-meta">
+        <span>Тренажёры соответствий // группы и ловушки</span>
+        <button class="btn-ghost btn-menu" type="button" onclick="exitSortTrainer()">В меню</button>
+      </div>
+    </div>
+
+    <div class="sort-trainer-body">
+      <div class="sort-trainer-head">
+        <div>
+          <div class="section-title" style="margin:0 0 .35rem">Разложи факты по группам</div>
+          <h2 id="sort-trainer-title">—</h2>
+          <p id="sort-trainer-desc"></p>
+        </div>
+        <div class="sort-trainer-actions">
+          <button class="btn-ghost" type="button" onclick="resetSortTrainerAnswers()">Сбросить ответы</button>
+          <button class="btn-ghost" type="button" onclick="resetSortTrainerRound()">Новый раунд</button>
+          <button class="btn-primary" type="button" onclick="checkSortTrainer()">Проверить</button>
+        </div>
+      </div>
+
+      <div id="sort-trainer-tabs"></div>
+      <div id="sort-trainer-summary"></div>
+      <div id="sort-trainer-container"></div>
     </div>
   </div>
 

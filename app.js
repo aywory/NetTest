@@ -2,6 +2,8 @@
 //  STATE
 // ══════════════════════════════════════════════════════════════
 let questions = [];
+let sortTrainers = [];
+let sortTrainerState = null;
 let shuffled  = [];
 let current   = 0;
 let results   = [];   // true/false per question
@@ -55,9 +57,14 @@ const TEST_MODES = {
 // ══════════════════════════════════════════════════════════════
 async function init() {
   try {
-    const res = await fetch('questions.json');
-    questions = await res.json();
+    const [questionsRes, sortTrainersRes] = await Promise.all([
+      fetch('questions.json'),
+      fetch('sort_trainers.json')
+    ]);
+    questions = await questionsRes.json();
+    sortTrainers = await sortTrainersRes.json();
     updateModeStats();
+    updateSortTrainerStats();
     renderHistoryTable();
     if (!restoreActiveSession()) {
       showScreen('start-screen');
@@ -541,6 +548,387 @@ function normalizeOrder(order, expectedLength) {
     if (!seen.has(i)) return null;
   }
   return nums;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SORT TRAINERS
+// ══════════════════════════════════════════════════════════════
+function updateSortTrainerStats() {
+  const countEl = document.getElementById('sort-trainer-count');
+  if (countEl) countEl.textContent = sortTrainers.length;
+}
+
+function startSortTrainer(trainerId = null) {
+  if (!sortTrainers.length) {
+    showToast('Тренажёры соответствий не загружены');
+    return;
+  }
+
+  const trainer = sortTrainers.find(item => item.id === trainerId) || sortTrainers[0];
+  buildSortTrainerRound(trainer.id);
+  showScreen('sort-trainer-screen');
+}
+
+function exitSortTrainer() {
+  sortTrainerState = null;
+  showScreen('start-screen');
+}
+
+function resetSortTrainerRound() {
+  const trainerId = sortTrainerState?.trainerId || sortTrainers[0]?.id;
+  if (trainerId) buildSortTrainerRound(trainerId);
+}
+
+function resetSortTrainerAnswers() {
+  if (!sortTrainerState) return;
+  sortTrainerState.checked = false;
+  sortTrainerState.groups.forEach(group => {
+    group.instances.forEach(instance => {
+      instance.location = 'source';
+    });
+  });
+  renderSortTrainer();
+}
+
+function checkSortTrainer() {
+  if (!sortTrainerState) return;
+  sortTrainerState.checked = true;
+  renderSortTrainer();
+}
+
+function buildSortTrainerRound(trainerId) {
+  const trainer = sortTrainers.find(item => item.id === trainerId);
+  if (!trainer) return;
+
+  const groups = trainer.groups.map(group => {
+    const correctCards = trainer.cards.filter(card =>
+      Array.isArray(card.correctGroups) && card.correctGroups.includes(group.id)
+    );
+    const correctIds = new Set(correctCards.map(card => card.id));
+    const decoys = pickSortTrainerDecoys(trainer, group.id, correctIds);
+    const instances = shuffle([...correctCards, ...decoys].map(card => ({
+      id: `${group.id}__${card.id}`,
+      cardId: card.id,
+      groupId: group.id,
+      location: 'source'
+    })));
+
+    return {
+      ...group,
+      instances,
+      correctCount: correctCards.length
+    };
+  });
+
+  sortTrainerState = {
+    trainerId: trainer.id,
+    trainer,
+    cardById: Object.fromEntries(trainer.cards.map(card => [card.id, card])),
+    groups,
+    checked: false
+  };
+
+  renderSortTrainer();
+}
+
+function pickSortTrainerDecoys(trainer, groupId, correctIds) {
+  const range = Array.isArray(trainer.decoyRange) ? trainer.decoyRange : [2, 4];
+  const min = Math.max(0, Number(range[0]) || 0);
+  const max = Math.max(min, Number(range[1]) || min);
+  const targetCount = randomBetween(min, max);
+
+  const trapCards = trainer.cards.filter(card =>
+    !correctIds.has(card.id) && Array.isArray(card.trapFor) && card.trapFor.includes(groupId)
+  );
+  const fallbackCards = trainer.cards.filter(card =>
+    !correctIds.has(card.id) && !trapCards.some(trap => trap.id === card.id)
+  );
+
+  const picked = sampleItems(trapCards, targetCount);
+  if (picked.length < targetCount) {
+    picked.push(...sampleItems(fallbackCards, targetCount - picked.length));
+  }
+
+  return picked;
+}
+
+function renderSortTrainer() {
+  if (!sortTrainerState) return;
+
+  const { trainer, groups, checked } = sortTrainerState;
+  document.getElementById('sort-trainer-title').textContent = trainer.title;
+  document.getElementById('sort-trainer-desc').textContent = trainer.description || '';
+
+  renderSortTrainerTabs();
+  renderSortTrainerSummary();
+
+  const container = document.getElementById('sort-trainer-container');
+  container.innerHTML = `
+    <div class="sort-board ${checked ? 'sort-board-checked' : ''}">
+      ${groups.map(group => renderSortTrainerGroup(group)).join('')}
+    </div>
+  `;
+  attachSortTrainerEvents();
+}
+
+function renderSortTrainerTabs() {
+  const tabsEl = document.getElementById('sort-trainer-tabs');
+  tabsEl.innerHTML = sortTrainers.map(trainer => `
+    <button
+      class="trainer-tab ${trainer.id === sortTrainerState.trainerId ? 'active' : ''}"
+      type="button"
+      data-trainer-id="${escapeAttr(trainer.id)}"
+    >
+      ${escapeHtml(trainer.title)}
+    </button>
+  `).join('');
+
+  tabsEl.querySelectorAll('.trainer-tab').forEach(button => {
+    button.addEventListener('click', () => buildSortTrainerRound(button.dataset.trainerId));
+  });
+}
+
+function renderSortTrainerSummary() {
+  const summaryEl = document.getElementById('sort-trainer-summary');
+  const result = getSortTrainerResult();
+
+  if (!sortTrainerState.checked) {
+    summaryEl.innerHTML = `
+      <div class="sort-summary">
+        <span>Правильных фактов: <strong>${result.totalCorrect}</strong></span>
+        <span>Групп: <strong>${sortTrainerState.groups.length}</strong></span>
+        <span>Ловушки каждый раз выбираются заново</span>
+      </div>
+    `;
+    return;
+  }
+
+  const pct = result.totalCorrect
+    ? Math.round(result.correctSelected / result.totalCorrect * 100)
+    : 0;
+  summaryEl.innerHTML = `
+    <div class="sort-summary sort-summary-checked">
+      <span>Верно выбрано: <strong>${result.correctSelected}/${result.totalCorrect}</strong> (${pct}%)</span>
+      <span>Лишних: <strong>${result.wrongSelected}</strong></span>
+      <span>Пропущено: <strong>${result.missed}</strong></span>
+      <span>Групп без ошибок: <strong>${result.cleanGroups}/${sortTrainerState.groups.length}</strong></span>
+    </div>
+  `;
+}
+
+function renderSortTrainerGroup(group) {
+  const source = group.instances.filter(instance => instance.location === 'source');
+  const bucket = group.instances.filter(instance => instance.location === 'bucket');
+  const review = sortTrainerState.checked ? renderSortTrainerGroupReview(group) : '';
+
+  return `
+    <section class="sort-group" data-group-id="${escapeAttr(group.id)}">
+      <div class="sort-group-head">
+        <div>
+          <h3>${escapeHtml(group.title)}</h3>
+          <p>${escapeHtml(group.subtitle || '')}</p>
+        </div>
+        <span>${group.correctCount} верных</span>
+      </div>
+
+      <div class="sort-zone-label">Кандидаты</div>
+      <div class="sort-card-zone sort-source-zone" data-zone="source" data-group-id="${escapeAttr(group.id)}">
+        ${source.map(instance => renderSortTrainerCard(group, instance)).join('') || '<div class="sort-empty">Все карточки перенесены</div>'}
+      </div>
+
+      <div class="sort-zone-label">Перетащи сюда только верные факты</div>
+      <div class="sort-card-zone sort-bucket-zone" data-zone="bucket" data-group-id="${escapeAttr(group.id)}">
+        ${bucket.map(instance => renderSortTrainerCard(group, instance)).join('') || '<div class="sort-empty">Пока пусто</div>'}
+      </div>
+
+      ${review}
+    </section>
+  `;
+}
+
+function renderSortTrainerCard(group, instance) {
+  const card = sortTrainerState.cardById[instance.cardId];
+  const isCorrect = isSortTrainerCardCorrect(group.id, card);
+  const classes = ['sort-card'];
+
+  if (sortTrainerState.checked) {
+    if (instance.location === 'bucket' && isCorrect) classes.push('correct');
+    if (instance.location === 'bucket' && !isCorrect) classes.push('wrong');
+    if (instance.location === 'source' && isCorrect) classes.push('missed');
+  }
+
+  return `
+    <button
+      class="${classes.join(' ')}"
+      type="button"
+      draggable="${sortTrainerState.checked ? 'false' : 'true'}"
+      data-instance-id="${escapeAttr(instance.id)}"
+    >
+      ${escapeHtml(card.text)}
+    </button>
+  `;
+}
+
+function renderSortTrainerGroupReview(group) {
+  const missed = [];
+  const wrong = [];
+
+  group.instances.forEach(instance => {
+    const card = sortTrainerState.cardById[instance.cardId];
+    const correct = isSortTrainerCardCorrect(group.id, card);
+    if (instance.location === 'source' && correct) missed.push(card);
+    if (instance.location === 'bucket' && !correct) wrong.push(card);
+  });
+
+  if (!missed.length && !wrong.length) {
+    return '<div class="sort-review sort-review-good">Группа собрана без ошибок.</div>';
+  }
+
+  return `
+    <div class="sort-review">
+      ${missed.length ? `<div><strong>Пропущено:</strong>${missed.map(renderSortReviewCard).join('')}</div>` : ''}
+      ${wrong.length ? `<div><strong>Лишнее:</strong>${wrong.map(renderSortReviewCard).join('')}</div>` : ''}
+    </div>
+  `;
+}
+
+function renderSortReviewCard(card) {
+  return `
+    <p>
+      <span>${escapeHtml(card.text)}</span>
+      <small>${escapeHtml(card.explanation || 'Пояснение не указано.')}</small>
+    </p>
+  `;
+}
+
+function attachSortTrainerEvents() {
+  const root = document.getElementById('sort-trainer-container');
+  if (!root || !sortTrainerState || sortTrainerState.checked) return;
+
+  root.querySelectorAll('.sort-card').forEach(cardEl => {
+    cardEl.addEventListener('click', () => toggleSortTrainerCard(cardEl.dataset.instanceId));
+    cardEl.addEventListener('dragstart', event => {
+      event.dataTransfer.setData('text/plain', cardEl.dataset.instanceId);
+      event.dataTransfer.effectAllowed = 'move';
+      cardEl.classList.add('dragging');
+    });
+    cardEl.addEventListener('dragend', () => {
+      cardEl.classList.remove('dragging');
+    });
+  });
+
+  root.querySelectorAll('.sort-card-zone').forEach(zoneEl => {
+    zoneEl.addEventListener('dragover', event => {
+      event.preventDefault();
+      zoneEl.classList.add('drag-over');
+    });
+    zoneEl.addEventListener('dragleave', () => {
+      zoneEl.classList.remove('drag-over');
+    });
+    zoneEl.addEventListener('drop', event => {
+      event.preventDefault();
+      zoneEl.classList.remove('drag-over');
+      moveSortTrainerCard(
+        event.dataTransfer.getData('text/plain'),
+        zoneEl.dataset.groupId,
+        zoneEl.dataset.zone
+      );
+    });
+  });
+}
+
+function toggleSortTrainerCard(instanceId) {
+  const found = findSortTrainerInstance(instanceId);
+  if (!found || sortTrainerState.checked) return;
+  found.instance.location = found.instance.location === 'bucket' ? 'source' : 'bucket';
+  renderSortTrainer();
+}
+
+function moveSortTrainerCard(instanceId, targetGroupId, targetZone) {
+  const found = findSortTrainerInstance(instanceId);
+  if (!found || sortTrainerState.checked) return;
+
+  if (found.group.id !== targetGroupId) {
+    showToast('Карточка относится к другому блоку кандидатов');
+    return;
+  }
+
+  found.instance.location = targetZone === 'bucket' ? 'bucket' : 'source';
+  renderSortTrainer();
+}
+
+function findSortTrainerInstance(instanceId) {
+  if (!sortTrainerState) return null;
+
+  for (const group of sortTrainerState.groups) {
+    const instance = group.instances.find(item => item.id === instanceId);
+    if (instance) return { group, instance };
+  }
+
+  return null;
+}
+
+function isSortTrainerCardCorrect(groupId, card) {
+  return Array.isArray(card?.correctGroups) && card.correctGroups.includes(groupId);
+}
+
+function getSortTrainerResult() {
+  const result = {
+    totalCorrect: 0,
+    correctSelected: 0,
+    wrongSelected: 0,
+    missed: 0,
+    cleanGroups: 0
+  };
+
+  if (!sortTrainerState) return result;
+
+  sortTrainerState.groups.forEach(group => {
+    let groupWrong = 0;
+    let groupMissed = 0;
+
+    group.instances.forEach(instance => {
+      const card = sortTrainerState.cardById[instance.cardId];
+      const correct = isSortTrainerCardCorrect(group.id, card);
+
+      if (correct) result.totalCorrect++;
+      if (instance.location === 'bucket' && correct) result.correctSelected++;
+      if (instance.location === 'bucket' && !correct) {
+        result.wrongSelected++;
+        groupWrong++;
+      }
+      if (instance.location === 'source' && correct) {
+        result.missed++;
+        groupMissed++;
+      }
+    });
+
+    if (!groupWrong && !groupMissed) result.cleanGroups++;
+  });
+
+  return result;
+}
+
+function sampleItems(items, count) {
+  return shuffle([...items]).slice(0, Math.max(0, count));
+}
+
+function randomBetween(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/`/g, '&#96;');
 }
 
 // ══════════════════════════════════════════════════════════════
