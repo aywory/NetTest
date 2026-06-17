@@ -24,12 +24,17 @@ const TEST_MODES = {
   labs: {
     title: 'Лабы 1-8',
     description: 'Практика по пройденным лабораторным',
-    filter: q => q.topic !== 'Термины и определения'
+    filter: q => q.topic !== 'Термины и определения' && q.pack !== 'supplement'
   },
   terms: {
     title: 'Термины',
     description: 'Определения, уровни, протоколы, устройства',
     filter: q => q.topic === 'Термины и определения'
+  },
+  supplement: {
+    title: 'Дополнение',
+    description: 'Темы и формулировки, всплывшие после экзамена',
+    filter: q => q.pack === 'supplement'
   },
   exam: {
     title: 'Экзамен',

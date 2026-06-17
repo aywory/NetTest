@@ -3507,5 +3507,1421 @@
     ],
     "answer": 0,
     "explanation": "Variably subnetted означает наличие подсетей с разными префиксами внутри более крупного диапазона. Это нормально для VLSM и видно в лабораторной по маршрутизации."
+  },
+  {
+    "id": 231,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Как называется устройство, предназначенное для преобразования цифрового сигнала в аналоговый и наоборот?",
+    "options": [
+      "Коммутатор",
+      "Маршрутизатор",
+      "Модем",
+      "Концентратор"
+    ],
+    "answer": 2,
+    "explanation": "Модем выполняет модуляцию и демодуляцию: цифровой сигнал преобразуется в аналоговый и обратно."
+  },
+  {
+    "id": 232,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Какой стандарт Wi-Fi работает в диапазоне 5 ГГц и обеспечивает наиболее высокую скорость среди 802.11b/g/n/ac?",
+    "options": [
+      "802.11b",
+      "802.11g",
+      "802.11n",
+      "802.11ac"
+    ],
+    "answer": 3,
+    "explanation": "802.11ac работает в 5 ГГц и даёт скорости выше, чем b/g/n в типичных экзаменационных сравнениях."
+  },
+  {
+    "id": 233,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Как называется PDU канального уровня модели OSI?",
+    "options": [
+      "Бит",
+      "Кадр (Frame)",
+      "Пакет",
+      "Сегмент"
+    ],
+    "answer": 1,
+    "explanation": "Для L2 используется кадр, для L3 пакет, для L4 сегмент, для L1 бит."
+  },
+  {
+    "id": 234,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "JPEG, MPEG и ASCII обычно относят к стандартам какого уровня OSI?",
+    "options": [
+      "Прикладного",
+      "Представления",
+      "Физического",
+      "Канального"
+    ],
+    "answer": 1,
+    "explanation": "Уровень представления отвечает за формат данных, кодирование, сжатие и представление информации."
+  },
+  {
+    "id": 235,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "В сетях с коммутацией каналов пропускная способность...",
+    "options": [
+      "Динамически распределяется между всеми пользователями",
+      "Зависит от типа передаваемого файла",
+      "Гарантирована для установленного соединения",
+      "Ограничена скоростью самого медленного узла"
+    ],
+    "answer": 2,
+    "explanation": "Коммутация каналов выделяет ресурс соединению; пакетная коммутация делит ресурс динамически."
+  },
+  {
+    "id": 236,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Как называется протокол, выполняющий обратную функцию ARP: определение IP-адреса по MAC-адресу?",
+    "options": [
+      "RARP (Reverse ARP)",
+      "InARP",
+      "DHCP",
+      "BOOTP"
+    ],
+    "answer": 0,
+    "explanation": "RARP исторически использовался для получения IP по MAC. DHCP и BOOTP решают близкую задачу, но это не Reverse ARP."
+  },
+  {
+    "id": 237,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Какой уровень OSI добавляет к PDU информацию о портах TCP/UDP?",
+    "options": [
+      "Сетевой",
+      "Транспортный",
+      "Сеансовый",
+      "Прикладной"
+    ],
+    "answer": 1,
+    "explanation": "Порты TCP/UDP относятся к транспортному уровню."
+  },
+  {
+    "id": 238,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Какой диапазон VLAN относится к Normal Range на коммутаторах Cisco?",
+    "options": [
+      "1-1005",
+      "1006-4094",
+      "1-4094",
+      "100-1000"
+    ],
+    "answer": 0,
+    "explanation": "Обычный диапазон VLAN - 1-1005, при этом 1002-1005 зарезервированы для устаревших технологий."
+  },
+  {
+    "id": 239,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Какая команда покажет текущие переговоры DTP или режим switchport на интерфейсе?",
+    "options": [
+      "show ip interface brief",
+      "show running-config",
+      "show vtp status",
+      "show dtp interface / show interfaces switchport"
+    ],
+    "answer": 3,
+    "explanation": "DTP смотрят через show dtp interface, а фактический режим порта - через show interfaces switchport."
+  },
+  {
+    "id": 240,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Что делает команда switchport trunk allowed vlan add 10,20?",
+    "options": [
+      "Разрешает на транке только VLAN 10 и 20, удаляя остальные",
+      "Добавляет VLAN 10 и 20 в список разрешённых на транке",
+      "Создаёт новые VLAN 10 и 20",
+      "Удаляет VLAN 10 и 20"
+    ],
+    "answer": 1,
+    "explanation": "Ключевое слово add добавляет VLAN к существующему списку. Без add список разрешённых VLAN заменяется."
+  },
+  {
+    "id": 241,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Что по умолчанию определяет выбор Root Bridge в STP?",
+    "options": [
+      "IP-адрес управления",
+      "Количество MAC-адресов в CAM-таблице",
+      "Priority и MAC-адрес",
+      "Скорость портов 1G/10G"
+    ],
+    "answer": 2,
+    "explanation": "Bridge ID строится из priority и MAC-адреса. Побеждает минимальное значение Bridge ID."
+  },
+  {
+    "id": 242,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Что такое Seamless Roaming в беспроводных сетях?",
+    "options": [
+      "Переход клиента между разными SSID без разрыва соединения",
+      "Переход клиента от одной точки доступа к другой без потери пакетов и прерывания сессии",
+      "Подключение к интернету через спутник",
+      "Автоматическое изменение пароля"
+    ],
+    "answer": 1,
+    "explanation": "Seamless roaming - бесшовный переход между точками доступа с сохранением сессии."
+  },
+  {
+    "id": 243,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Что такое Layer 2 Roaming в беспроводных сетях?",
+    "options": [
+      "Перемещение клиента между разными подсетями L3",
+      "Перемещение клиента между точками доступа в пределах одной подсети или VLAN",
+      "Переключение между 2.4 и 5 ГГц",
+      "Подключение к VPN"
+    ],
+    "answer": 1,
+    "explanation": "L2 roaming остаётся в одной L2-сети/VLAN; при L3 roaming меняется подсеть."
+  },
+  {
+    "id": 244,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Какое утверждение о топологии «звезда» верно?",
+    "options": [
+      "Она самая дешёвая в реализации",
+      "Она легко расширяется подключением новых лучей к центру",
+      "Она не требует центрального устройства",
+      "Она неуязвима к сбоям"
+    ],
+    "answer": 1,
+    "explanation": "Звезда удобна для расширения, но зависит от центрального устройства."
+  },
+  {
+    "id": 245,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Режим Ad-hoc в беспроводных сетях создаёт какую топологию?",
+    "options": [
+      "Клиент-серверную",
+      "Точку-точку (Peer-to-peer/IBSS)",
+      "Инфраструктурную звезду",
+      "Иерархическую"
+    ],
+    "answer": 1,
+    "explanation": "Ad-hoc/IBSS соединяет устройства напрямую без точки доступа."
+  },
+  {
+    "id": 246,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Какой класс IPv4 используется для адресов loopback вида 127.x.x.x?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": 0,
+    "explanation": "127.0.0.0/8 исторически относится к классу A, но зарезервирован для loopback."
+  },
+  {
+    "id": 247,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Сколько usable-узлов можно разместить в сети 192.168.1.0/30?",
+    "options": [
+      "254",
+      "2",
+      "30",
+      "62"
+    ],
+    "answer": 1,
+    "explanation": "/30 даёт 4 адреса всего: сеть, 2 usable-адреса и broadcast."
+  },
+  {
+    "id": 248,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Какие из перечисленных протоколов работают на Интернет-уровне модели TCP/IP?",
+    "options": [
+      "HTTP",
+      "IP",
+      "ICMP",
+      "ARP",
+      "SMTP"
+    ],
+    "answers": [
+      1,
+      2,
+      3
+    ],
+    "explanation": "В учебной модели TCP/IP к Internet layer обычно относят IP, ICMP и ARP. HTTP и SMTP находятся на прикладном уровне."
+  },
+  {
+    "id": 249,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: реальные формулировки билета",
+    "question": "Порт 80 зарезервирован стандартом для какого протокола?",
+    "options": [
+      "FTP",
+      "SMTP",
+      "HTTP",
+      "DNS"
+    ],
+    "answer": 2,
+    "explanation": "HTTP использует TCP-порт 80 по умолчанию."
+  },
+  {
+    "id": 250,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: топологии сетей",
+    "question": "Какая топология сильнее всего зависит от работоспособности центрального устройства?",
+    "options": [
+      "Шина",
+      "Звезда",
+      "Кольцо",
+      "Полносвязная mesh"
+    ],
+    "answer": 1,
+    "explanation": "В звезде отказ центрального коммутатора или точки доступа нарушает работу всей такой группы подключений."
+  },
+  {
+    "id": 251,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: топологии сетей",
+    "question": "Для какой классической топологии особенно важны терминаторы на концах среды передачи?",
+    "options": [
+      "Шина",
+      "Звезда",
+      "Дерево",
+      "Mesh"
+    ],
+    "answer": 0,
+    "explanation": "В шинной топологии терминаторы гасят сигнал на концах кабеля и предотвращают отражения."
+  },
+  {
+    "id": 252,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: топологии сетей",
+    "question": "Какая топология наиболее устойчива к отказу одного канала или узла за счёт множества связей?",
+    "options": [
+      "Шина",
+      "Кольцо без резервирования",
+      "Mesh",
+      "Одиночная звезда"
+    ],
+    "answer": 2,
+    "explanation": "Mesh даёт несколько альтернативных путей, поэтому отказ одного элемента не обязательно разрывает связность."
+  },
+  {
+    "id": 253,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: топологии сетей",
+    "question": "Что точнее всего описывает топологию «дерево»?",
+    "options": [
+      "Один общий коаксиальный кабель",
+      "Иерархическая структура, часто как комбинация нескольких звёзд",
+      "Прямое соединение двух устройств",
+      "Каждый узел соединён со всеми остальными"
+    ],
+    "answer": 1,
+    "explanation": "Дерево строится иерархически: корень, промежуточные уровни и ветви."
+  },
+  {
+    "id": 254,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: топологии сетей",
+    "question": "Какие утверждения о топологиях корректны?",
+    "options": [
+      "В звезде новые узлы обычно подключают к центральному устройству",
+      "В шине все узлы используют общую среду передачи",
+      "В mesh возможны резервные пути между узлами",
+      "Ad-hoc Wi-Fi обязательно требует отдельный контроллер WLAN",
+      "Кольцо передаёт трафик последовательно от узла к узлу"
+    ],
+    "answers": [
+      0,
+      1,
+      2,
+      4
+    ],
+    "explanation": "Ad-hoc работает без инфраструктурной точки доступа или контроллера."
+  },
+  {
+    "id": 255,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: топологии сетей",
+    "question": "Какой протокол доступа к среде исторически связан с общей Ethernet-средой и коллизиями?",
+    "options": [
+      "CSMA/CD",
+      "DTP",
+      "STP",
+      "VTP"
+    ],
+    "answer": 0,
+    "explanation": "CSMA/CD применялся в half-duplex Ethernet с общей средой и коллизиями."
+  },
+  {
+    "id": 256,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: классы IPv4 и подсети",
+    "question": "Какой класс IPv4 имеет первый октет в диапазоне 128-191?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": 1,
+    "explanation": "Класс B: 128-191, маска по умолчанию /16."
+  },
+  {
+    "id": 257,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: классы IPv4 и подсети",
+    "question": "Какой класс IPv4 имеет первый октет в диапазоне 192-223?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": 2,
+    "explanation": "Класс C: 192-223, маска по умолчанию /24."
+  },
+  {
+    "id": 258,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: классы IPv4 и подсети",
+    "question": "Для чего предназначены адреса класса D?",
+    "options": [
+      "Для обычных малых сетей",
+      "Для loopback",
+      "Для multicast-рассылки",
+      "Для broadcast в каждой подсети"
+    ],
+    "answer": 2,
+    "explanation": "Класс D - 224.0.0.0-239.255.255.255, multicast."
+  },
+  {
+    "id": 259,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: классы IPv4 и подсети",
+    "question": "Какой класс определяется двоичным началом первого октета 110xxxxx?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": 2,
+    "explanation": "110xxxxx соответствует диапазону 192-223, то есть классу C."
+  },
+  {
+    "id": 260,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: классы IPv4 и подсети",
+    "question": "Какая маска по умолчанию у классовой сети B?",
+    "options": [
+      "255.0.0.0",
+      "255.255.0.0",
+      "255.255.255.0",
+      "255.255.255.252"
+    ],
+    "answer": 1,
+    "explanation": "Класс B по умолчанию использует /16, то есть 255.255.0.0."
+  },
+  {
+    "id": 261,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: классы IPv4 и подсети",
+    "question": "Сколько usable-адресов даёт префикс /27?",
+    "options": [
+      "14",
+      "30",
+      "62",
+      "126"
+    ],
+    "answer": 1,
+    "explanation": "/27 оставляет 5 хостовых бит: 2^5 - 2 = 30 usable-адресов."
+  },
+  {
+    "id": 262,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: классы IPv4 и подсети",
+    "question": "Какая маска соответствует префиксу /26?",
+    "options": [
+      "255.255.255.128",
+      "255.255.255.192",
+      "255.255.255.224",
+      "255.255.255.240"
+    ],
+    "answer": 1,
+    "explanation": "/26 - это 255.255.255.192, размер блока 64 адреса."
+  },
+  {
+    "id": 263,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: классы IPv4 и подсети",
+    "question": "Что означает CIDR в сравнении со старой классовой адресацией?",
+    "options": [
+      "Адреса выдаются только классами A, B, C",
+      "Можно задавать префикс произвольной длины и экономнее делить адресное пространство",
+      "Каждая сеть обязана иметь маску /8",
+      "Маршрутизация выполняется только по MAC-адресам"
+    ],
+    "answer": 1,
+    "explanation": "CIDR отказался от жёстких классов и позволяет использовать префиксы нужной длины."
+  },
+  {
+    "id": 264,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: классы IPv4 и подсети",
+    "question": "Какие адреса нельзя назначать обычному хосту как usable-адрес подсети?",
+    "options": [
+      "Адрес сети",
+      "Directed broadcast-адрес подсети",
+      "Обычный адрес между сетью и broadcast",
+      "127.0.0.1 как адрес интерфейса LAN-хоста",
+      "Первый usable-адрес после адреса сети"
+    ],
+    "answers": [
+      0,
+      1,
+      3
+    ],
+    "explanation": "Адрес сети и broadcast зарезервированы внутри подсети; 127.0.0.1 - loopback, а не адрес LAN-интерфейса."
+  },
+  {
+    "id": 265,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: OSI и TCP/IP глубже",
+    "question": "Какие уровни OSI объединяет прикладной уровень модели TCP/IP?",
+    "options": [
+      "Только физический",
+      "Сетевой и канальный",
+      "Сеансовый, представления и прикладной",
+      "Только транспортный"
+    ],
+    "answer": 2,
+    "explanation": "В 4-уровневой TCP/IP модели верхний уровень обычно покрывает OSI L5-L7."
+  },
+  {
+    "id": 266,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: OSI и TCP/IP глубже",
+    "question": "Какой PDU соответствует транспортному уровню OSI?",
+    "options": [
+      "Бит",
+      "Кадр",
+      "Пакет",
+      "Сегмент"
+    ],
+    "answer": 3,
+    "explanation": "TCP/UDP на транспортном уровне работают с сегментами/датаграммами; в тестах обычно ответ - сегмент."
+  },
+  {
+    "id": 267,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: OSI и TCP/IP глубже",
+    "question": "Какой уровень OSI отвечает за маршрутизацию между IP-сетями?",
+    "options": [
+      "Физический",
+      "Канальный",
+      "Сетевой",
+      "Представления"
+    ],
+    "answer": 2,
+    "explanation": "Маршрутизация IP-пакетов относится к сетевому уровню."
+  },
+  {
+    "id": 268,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: OSI и TCP/IP глубже",
+    "question": "Какие уровни OSI обычно покрывает уровень доступа к сети в модели TCP/IP?",
+    "options": [
+      "1 и 2",
+      "3 и 4",
+      "5 и 6",
+      "Только 7"
+    ],
+    "answer": 0,
+    "explanation": "TCP/IP Network Access/Link layer соответствует физическому и канальному уровням OSI."
+  },
+  {
+    "id": 269,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: OSI и TCP/IP глубже",
+    "question": "Какая пара «протокол - уровень OSI» наиболее корректна?",
+    "options": [
+      "HTTP - физический",
+      "TCP - транспортный",
+      "IP - прикладной",
+      "Ethernet - сеансовый"
+    ],
+    "answer": 1,
+    "explanation": "TCP относится к L4. IP - L3, Ethernet - L2, HTTP - L7."
+  },
+  {
+    "id": 270,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: OSI и TCP/IP глубже",
+    "question": "Какие функции относятся к транспортному уровню?",
+    "options": [
+      "Использование TCP/UDP-портов",
+      "Сегментация данных приложений",
+      "Выбор маршрута между IP-сетями",
+      "Надёжная доставка в TCP через подтверждения",
+      "Преобразование цифрового сигнала в электрический"
+    ],
+    "answers": [
+      0,
+      1,
+      3
+    ],
+    "explanation": "Маршрутизация - L3, физическое кодирование сигнала - L1."
+  },
+  {
+    "id": 271,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: OSI и TCP/IP глубже",
+    "question": "Какие примеры ближе к уровню представления OSI?",
+    "options": [
+      "JPEG",
+      "MPEG",
+      "ASCII",
+      "IP",
+      "FastEthernet0/1"
+    ],
+    "answers": [
+      0,
+      1,
+      2
+    ],
+    "explanation": "JPEG, MPEG и ASCII связаны с представлением данных; IP и интерфейсы Cisco к этому уровню не относятся."
+  },
+  {
+    "id": 272,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: VLAN и DTP",
+    "question": "Какая VLAN является native VLAN на 802.1Q trunk по умолчанию на Cisco?",
+    "options": [
+      "0",
+      "1",
+      "1002",
+      "4094"
+    ],
+    "answer": 1,
+    "explanation": "Native VLAN по умолчанию - VLAN 1."
+  },
+  {
+    "id": 273,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: VLAN и DTP",
+    "question": "Какой диапазон относится к Extended Range VLAN?",
+    "options": [
+      "1-1005",
+      "1002-1005",
+      "1006-4094",
+      "0-255"
+    ],
+    "answer": 2,
+    "explanation": "Extended Range VLAN - 1006-4094."
+  },
+  {
+    "id": 274,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: VLAN и DTP",
+    "question": "Какие VLAN из Normal Range зарезервированы для устаревших Token Ring/FDDI?",
+    "options": [
+      "1-4",
+      "1002-1005",
+      "1006-1010",
+      "4090-4094"
+    ],
+    "answer": 1,
+    "explanation": "VLAN 1002-1005 зарезервированы и обычно не используются для обычных Ethernet-сетей."
+  },
+  {
+    "id": 275,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: VLAN и DTP",
+    "question": "Что делает switchport mode dynamic auto?",
+    "options": [
+      "Активно предлагает сформировать trunk",
+      "Пассивно соглашается на trunk, если сосед активно предлагает",
+      "Всегда запрещает trunk",
+      "Удаляет все VLAN с порта"
+    ],
+    "answer": 1,
+    "explanation": "Dynamic auto сам не инициирует trunk, но может согласиться на desirable/trunk-соседа."
+  },
+  {
+    "id": 276,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: VLAN и DTP",
+    "question": "Что делает switchport mode dynamic desirable?",
+    "options": [
+      "Активно пытается договориться о trunk",
+      "Отключает DTP полностью",
+      "Принудительно переводит порт в access без переговоров",
+      "Назначает native VLAN 1002"
+    ],
+    "answer": 0,
+    "explanation": "Dynamic desirable активно отправляет DTP и старается поднять trunk."
+  },
+  {
+    "id": 277,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: VLAN и DTP",
+    "question": "Что получится при соединении двух портов dynamic auto по DTP?",
+    "options": [
+      "Trunk",
+      "Access",
+      "Loopback",
+      "VTP server"
+    ],
+    "answer": 1,
+    "explanation": "Auto + Auto не инициируют trunk, поэтому порт остаётся access."
+  },
+  {
+    "id": 278,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: VLAN и DTP",
+    "question": "Что получится при соединении dynamic auto и dynamic desirable?",
+    "options": [
+      "Trunk",
+      "Access",
+      "Порт выключится",
+      "Будет создана VLAN 1"
+    ],
+    "answer": 0,
+    "explanation": "Desirable активно предлагает trunk, auto соглашается."
+  },
+  {
+    "id": 279,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: VLAN и DTP",
+    "question": "Какая команда отключает DTP-переговоры на trunk-порту?",
+    "options": [
+      "switchport nonegotiate",
+      "show vtp status",
+      "no ip routing",
+      "spanning-tree portfast"
+    ],
+    "answer": 0,
+    "explanation": "switchport nonegotiate отключает отправку DTP-кадров."
+  },
+  {
+    "id": 280,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: VLAN и DTP",
+    "question": "Какие команды относятся к просмотру VLAN/trunk/DTP на Cisco-коммутаторе?",
+    "options": [
+      "show vlan brief",
+      "show interfaces switchport",
+      "show dtp interface",
+      "show ip route",
+      "switchport trunk allowed vlan add 10,20"
+    ],
+    "answers": [
+      0,
+      1,
+      2
+    ],
+    "explanation": "Первые три команды именно show-команды просмотра. ip route относится к маршрутизации, а switchport trunk allowed vlan add - команда настройки."
+  },
+  {
+    "id": 281,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: VLAN и DTP",
+    "question": "Какие утверждения о switchport trunk allowed vlan корректны?",
+    "options": [
+      "С add команда добавляет VLAN к текущему списку",
+      "Без add команда заменяет список разрешённых VLAN",
+      "Эта команда автоматически создаёт SVI для каждой VLAN",
+      "Команда применяется к trunk-порту",
+      "Команда настраивает IP-адрес маршрутизатора"
+    ],
+    "answers": [
+      0,
+      1,
+      3
+    ],
+    "explanation": "Команда управляет списком VLAN на trunk. Она не создаёт интерфейсы VLAN и не назначает IP."
+  },
+  {
+    "id": 282,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: STP и петли",
+    "question": "Для чего нужен STP в коммутируемой сети?",
+    "options": [
+      "Для назначения IP-адресов хостам",
+      "Для предотвращения L2-петель путём блокировки избыточных путей",
+      "Для шифрования Wi-Fi",
+      "Для перевода DNS-имён в IP"
+    ],
+    "answer": 1,
+    "explanation": "STP строит петлеустойчивое дерево и блокирует лишние L2-пути."
+  },
+  {
+    "id": 283,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: STP и петли",
+    "question": "Что такое BPDU?",
+    "options": [
+      "Служебный кадр STP для обмена информацией между коммутаторами",
+      "IP-пакет DHCP",
+      "Тип VLAN-тега для native VLAN",
+      "Команда для очистки ARP-кэша"
+    ],
+    "answer": 0,
+    "explanation": "BPDU используются STP для выбора root bridge и расчёта дерева."
+  },
+  {
+    "id": 284,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: STP и петли",
+    "question": "Какой коммутатор станет Root Bridge при равном priority?",
+    "options": [
+      "С самым большим IP-адресом управления",
+      "С наименьшим MAC-адресом",
+      "С самым быстрым портом",
+      "С наибольшим числом VLAN"
+    ],
+    "answer": 1,
+    "explanation": "Если priority одинаковый, побеждает меньший MAC-адрес в Bridge ID."
+  },
+  {
+    "id": 285,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: STP и петли",
+    "question": "Какая команда показывает состояние STP и Root Bridge?",
+    "options": [
+      "show spanning-tree",
+      "show ip interface brief",
+      "show running-config startup",
+      "show arp reverse"
+    ],
+    "answer": 0,
+    "explanation": "show spanning-tree показывает root, роли и состояния портов STP."
+  },
+  {
+    "id": 286,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: STP и петли",
+    "question": "В чём подвох термина STP?",
+    "options": [
+      "STP всегда означает только кабель",
+      "STP может означать Spanning Tree Protocol или Shielded Twisted Pair, это разные вещи",
+      "STP означает только протокол маршрутизации L3",
+      "STP является заменой TCP"
+    ],
+    "answer": 1,
+    "explanation": "В сетях STP часто означает протокол против петель, но в кабелях STP - экранированная витая пара."
+  },
+  {
+    "id": 287,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: STP и петли",
+    "question": "Какие проблемы возможны при L2-петлях без STP?",
+    "options": [
+      "Broadcast storm",
+      "Дублирование кадров",
+      "Нестабильная CAM-таблица",
+      "Автоматическое уменьшение маски подсети",
+      "Самопроизвольная смена класса IP-адреса"
+    ],
+    "answers": [
+      0,
+      1,
+      2
+    ],
+    "explanation": "Петли L2 вызывают широковещательные бури, дубли и постоянное переобучение MAC-адресов."
+  },
+  {
+    "id": 288,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: Cisco CLI и команды",
+    "question": "Какая команда показывает краткий список интерфейсов и их IP/status/protocol?",
+    "options": [
+      "show ip interface brief",
+      "show vlan brief",
+      "show dtp interface",
+      "show mac address-table dynamic vlan add"
+    ],
+    "answer": 0,
+    "explanation": "show ip interface brief - базовая команда для быстрой проверки IP и состояния интерфейсов."
+  },
+  {
+    "id": 289,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: Cisco CLI и команды",
+    "question": "Какая команда показывает текущую активную конфигурацию устройства?",
+    "options": [
+      "show running-config",
+      "show startup-config erased",
+      "show ip arp add",
+      "show protocols delete"
+    ],
+    "answer": 0,
+    "explanation": "running-config - текущая конфигурация в RAM."
+  },
+  {
+    "id": 290,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: Cisco CLI и команды",
+    "question": "Какая команда показывает список VLAN и access-порты в них?",
+    "options": [
+      "show vlan brief",
+      "show ip route",
+      "show controllers serial",
+      "show version vlan add"
+    ],
+    "answer": 0,
+    "explanation": "show vlan brief показывает VLAN, их имена, статус и порты."
+  },
+  {
+    "id": 291,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: Cisco CLI и команды",
+    "question": "Какая команда используется для перехода в режим глобальной конфигурации?",
+    "options": [
+      "enable terminal",
+      "configure terminal",
+      "interface terminal",
+      "show configure"
+    ],
+    "answer": 1,
+    "explanation": "configure terminal или conf t переводит устройство в global configuration mode."
+  },
+  {
+    "id": 292,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: Cisco CLI и команды",
+    "question": "Какая команда назначает access-порт в VLAN 50?",
+    "options": [
+      "switchport access vlan 50",
+      "switchport trunk allowed vlan add 50",
+      "ip route vlan 50",
+      "vlan database access 50"
+    ],
+    "answer": 0,
+    "explanation": "На интерфейсе access VLAN назначается командой switchport access vlan N."
+  },
+  {
+    "id": 293,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: Cisco CLI и команды",
+    "question": "Какие команды обычно нужны для создания VLAN 50 с именем Sales?",
+    "options": [
+      "configure terminal",
+      "vlan 50",
+      "name Sales",
+      "ip route 50 255.255.255.0",
+      "switchport nonegotiate 50"
+    ],
+    "answers": [
+      0,
+      1,
+      2
+    ],
+    "explanation": "VLAN создаётся в global config: vlan 50, затем name Sales. ip route и nonegotiate не создают VLAN."
+  },
+  {
+    "id": 294,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: Cisco CLI и команды",
+    "question": "Какие команды полезны при диагностике статической маршрутизации?",
+    "options": [
+      "show ip route",
+      "ping",
+      "show ip interface brief",
+      "show interfaces switchport",
+      "show dtp interface"
+    ],
+    "answers": [
+      0,
+      1,
+      2
+    ],
+    "explanation": "Для L3-связности важны таблица маршрутизации, ping и состояние IP-интерфейсов. switchport/DTP - больше про L2/trunk."
+  },
+  {
+    "id": 295,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: Wi-Fi и безопасность",
+    "question": "Какой режим Wi-Fi использует точку доступа как центральный элемент?",
+    "options": [
+      "Infrastructure/BSS",
+      "Ad-hoc/IBSS",
+      "Loopback",
+      "DTP desirable"
+    ],
+    "answer": 0,
+    "explanation": "Infrastructure mode строится вокруг точки доступа."
+  },
+  {
+    "id": 296,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: Wi-Fi и безопасность",
+    "question": "Какой из протоколов защиты Wi-Fi считается устаревшим и наиболее слабым?",
+    "options": [
+      "WEP",
+      "WPA2",
+      "HTTPS",
+      "SSH"
+    ],
+    "answer": 0,
+    "explanation": "WEP давно считается небезопасным."
+  },
+  {
+    "id": 297,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: Wi-Fi и безопасность",
+    "question": "Что показывает команда Windows netsh wlan show networks?",
+    "options": [
+      "Доступные Wi-Fi-сети",
+      "Таблицу маршрутизации Cisco",
+      "Список VLAN на коммутаторе",
+      "Состояние STP root bridge"
+    ],
+    "answer": 0,
+    "explanation": "Команда выводит найденные беспроводные сети и связанную с ними информацию."
+  },
+  {
+    "id": 298,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: Wi-Fi и безопасность",
+    "question": "На каких уровнях OSI обычно рассматривается Wi-Fi 802.11?",
+    "options": [
+      "Только L7",
+      "L1 и L2",
+      "Только L4",
+      "L5-L7"
+    ],
+    "answer": 1,
+    "explanation": "802.11 описывает физический и канальный уровни беспроводной передачи."
+  },
+  {
+    "id": 299,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: Wi-Fi и безопасность",
+    "question": "Что означает SSID?",
+    "options": [
+      "Имя беспроводной сети",
+      "MAC-адрес точки доступа",
+      "Номер TCP-порта",
+      "Маска подсети"
+    ],
+    "answer": 0,
+    "explanation": "SSID - идентификатор/имя Wi-Fi-сети."
+  },
+  {
+    "id": 300,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: Wi-Fi и безопасность",
+    "question": "Что означает BSSID в Wi-Fi?",
+    "options": [
+      "MAC-адрес конкретной точки доступа/радиоинтерфейса",
+      "Общее имя сети",
+      "Пароль WPA2",
+      "Номер VLAN normal range"
+    ],
+    "answer": 0,
+    "explanation": "BSSID обычно является MAC-адресом конкретной AP в данном BSS."
+  },
+  {
+    "id": 301,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: Wi-Fi и безопасность",
+    "question": "Какие утверждения о roaming в Wi-Fi корректны?",
+    "options": [
+      "Layer 2 roaming остаётся в одной VLAN/подсети",
+      "Layer 3 roaming происходит между разными подсетями",
+      "Seamless roaming стремится сохранить сессию без заметного разрыва",
+      "Ad-hoc roaming требует DHCP-сервера Cisco VTP",
+      "Roaming всегда означает смену IP-класса A/B/C"
+    ],
+    "answers": [
+      0,
+      1,
+      2
+    ],
+    "explanation": "Roaming связан с перемещением клиента между AP; VTP и классы адресов здесь не являются сутью."
+  },
+  {
+    "id": 302,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: протоколы и устройства",
+    "question": "Какое устройство работает на L1 и просто повторяет электрический сигнал всем портам?",
+    "options": [
+      "Hub/концентратор",
+      "L3-маршрутизатор",
+      "DNS-сервер",
+      "Firewall приложений"
+    ],
+    "answer": 0,
+    "explanation": "Концентратор - физический уровень, без анализа кадров и MAC-таблицы."
+  },
+  {
+    "id": 303,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: протоколы и устройства",
+    "question": "Какое устройство обычно пересылает кадры по MAC-адресам?",
+    "options": [
+      "Коммутатор",
+      "Маршрутизатор",
+      "Модем",
+      "DNS-сервер"
+    ],
+    "answer": 0,
+    "explanation": "L2-коммутатор использует MAC/CAM-таблицу для пересылки кадров."
+  },
+  {
+    "id": 304,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: протоколы и устройства",
+    "question": "Какое устройство обычно пересылает пакеты между разными IP-сетями?",
+    "options": [
+      "Маршрутизатор",
+      "Повторитель",
+      "Пассивная розетка RJ-45",
+      "Терминатор шины"
+    ],
+    "answer": 0,
+    "explanation": "Маршрутизатор работает на L3 и выбирает путь по таблице маршрутизации."
+  },
+  {
+    "id": 305,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: протоколы и устройства",
+    "question": "Что делает ARP в IPv4/Ethernet-сети?",
+    "options": [
+      "Определяет MAC-адрес по известному IPv4-адресу",
+      "Выдаёт IP-адреса из пула DHCP",
+      "Шифрует HTTP-трафик",
+      "Выбирает Root Bridge"
+    ],
+    "answer": 0,
+    "explanation": "ARP нужен, чтобы перед отправкой Ethernet-кадра узнать MAC следующего узла в локальном сегменте."
+  },
+  {
+    "id": 306,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: протоколы и устройства",
+    "question": "Как распространяется обычный ARP Request в локальной Ethernet-сети?",
+    "options": [
+      "Broadcast",
+      "Только unicast на DNS-сервер",
+      "Через TCP-порт 80",
+      "Только между маршрутизаторами BGP"
+    ],
+    "answer": 0,
+    "explanation": "ARP Request отправляется широковещательно в пределах L2-домена."
+  },
+  {
+    "id": 307,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: протоколы и устройства",
+    "question": "Какой протокол чаще всего используется командой ping?",
+    "options": [
+      "ICMP",
+      "SMTP",
+      "FTP",
+      "DTP"
+    ],
+    "answer": 0,
+    "explanation": "ping использует ICMP Echo Request/Reply."
+  },
+  {
+    "id": 308,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: протоколы и устройства",
+    "question": "Какой протокол автоматически выдаёт IP-адрес, маску, шлюз и DNS клиенту?",
+    "options": [
+      "DHCP",
+      "ARP",
+      "STP",
+      "VTP"
+    ],
+    "answer": 0,
+    "explanation": "DHCP централизованно выдаёт сетевые параметры клиентам."
+  },
+  {
+    "id": 309,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: протоколы и устройства",
+    "question": "Какой протокол преобразует доменное имя в IP-адрес?",
+    "options": [
+      "DNS",
+      "DTP",
+      "STP",
+      "RARP"
+    ],
+    "answer": 0,
+    "explanation": "DNS сопоставляет имена и IP-адреса."
+  },
+  {
+    "id": 310,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: протоколы и устройства",
+    "question": "Какие элементы относятся к пассивному сетевому оборудованию?",
+    "options": [
+      "Кабели",
+      "Розетки RJ-45",
+      "Патч-панели",
+      "Маршрутизаторы",
+      "Терминаторы"
+    ],
+    "answers": [
+      0,
+      1,
+      2,
+      4
+    ],
+    "explanation": "Пассивные элементы не обрабатывают трафик активно. Маршрутизатор - активное устройство."
+  },
+  {
+    "id": 311,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: протоколы и устройства",
+    "question": "Какие устройства относятся к активному сетевому оборудованию?",
+    "options": [
+      "Маршрутизатор",
+      "Коммутатор",
+      "Точка доступа",
+      "Модем",
+      "Патч-корд"
+    ],
+    "answers": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "explanation": "Активные устройства питаются и обрабатывают/передают сигнал или трафик. Патч-корд пассивен."
+  },
+  {
+    "id": 312,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: маршрутизация и задача",
+    "question": "Что означает C в таблице маршрутизации Cisco?",
+    "options": [
+      "Connected, непосредственно подключённая сеть",
+      "Compressed, сжатый маршрут",
+      "Client, маршрут к клиенту DHCP",
+      "Collision, коллизионный домен"
+    ],
+    "answer": 0,
+    "explanation": "C - connected route, сеть интерфейса самого маршрутизатора."
+  },
+  {
+    "id": 313,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: маршрутизация и задача",
+    "question": "Что означает S в таблице маршрутизации Cisco?",
+    "options": [
+      "Static route",
+      "Session route",
+      "Switchport route",
+      "SSID route"
+    ],
+    "answer": 0,
+    "explanation": "S обозначает статический маршрут."
+  },
+  {
+    "id": 314,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: маршрутизация и задача",
+    "question": "Что такое next-hop в маршрутизации?",
+    "options": [
+      "IP-адрес следующего маршрутизатора на пути к сети назначения",
+      "MAC-адрес любого клиента Wi-Fi",
+      "Broadcast-адрес текущей подсети",
+      "Имя VLAN"
+    ],
+    "answer": 0,
+    "explanation": "Next-hop должен быть достижим через одну из connected-сетей текущего маршрутизатора."
+  },
+  {
+    "id": 315,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: маршрутизация и задача",
+    "question": "Почему для ping между удалёнными сетями нужен обратный маршрут?",
+    "options": [
+      "Ответный пакет тоже должен знать путь назад к исходной сети",
+      "ICMP работает только при наличии VLAN 1",
+      "ARP заменяет все IP-маршруты",
+      "TCP-порт 80 должен быть открыт"
+    ],
+    "answer": 0,
+    "explanation": "Связность двусторонняя: запрос должен дойти до цели, а ответ - вернуться обратно."
+  },
+  {
+    "id": 316,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: маршрутизация и задача",
+    "question": "Что делает маршрут 0.0.0.0/0?",
+    "options": [
+      "Задаёт маршрут по умолчанию для сетей, не найденных более точным маршрутом",
+      "Запрещает все IP-пакеты",
+      "Создаёт VLAN 0",
+      "Очищает таблицу ARP"
+    ],
+    "answer": 0,
+    "explanation": "Default route используется, если нет более специфичного совпадения."
+  },
+  {
+    "id": 317,
+    "pack": "supplement",
+    "type": "single_choice",
+    "topic": "Дополнение: маршрутизация и задача",
+    "question": "Что означает правило longest prefix match?",
+    "options": [
+      "Выбирается маршрут с самым длинным, то есть наиболее специфичным, совпадающим префиксом",
+      "Выбирается маршрут с самым длинным текстовым именем",
+      "Всегда выбирается default route",
+      "Выбирается маршрут с самым большим MAC-адресом"
+    ],
+    "answer": 0,
+    "explanation": "Например, /26 предпочтительнее /24 для адреса, который попадает в обе сети."
+  },
+  {
+    "id": 318,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: маршрутизация и задача",
+    "question": "Что нужно определить по схеме перед заполнением таблицы маршрутизации каждого роутера?",
+    "options": [
+      "Connected-сети конкретного роутера",
+      "Удалённые сети",
+      "Достижимые next-hop адреса соседей",
+      "Адреса сетей и маски подсетей",
+      "Пароль от SSID каждого клиента"
+    ],
+    "answers": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "explanation": "Экзаменационная задача требует отдельной логики для каждого роутера: какие сети подключены напрямую, какие удалены и через кого достижимы."
+  },
+  {
+    "id": 319,
+    "pack": "supplement",
+    "type": "multi_choice",
+    "topic": "Дополнение: маршрутизация и задача",
+    "question": "Какие ошибки типичны при заполнении статических маршрутов?",
+    "options": [
+      "Указан next-hop не из connected-сети текущего роутера",
+      "Забыли обратный маршрут",
+      "Неверно посчитали маску сети назначения",
+      "Connected-сеть приняли за удалённую",
+      "Указали show running-config вместо IP next-hop"
+    ],
+    "answers": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "explanation": "Первые четыре ошибки ломают смысл маршрута. Последний вариант явно бессмысленен, но полезен как экзаменационный подвох по командам."
   }
 ]
