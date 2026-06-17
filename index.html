@@ -50,6 +50,11 @@
           <span class="mode-desc">15 + 4 + задача</span>
           <span class="mode-count"><strong id="mode-count-exam">20</strong> заданий</span>
         </button>
+        <button class="mode-card" type="button" data-mode="exam_v2" onclick="selectMode('exam_v2')">
+          <span class="mode-title">Экзамен v2</span>
+          <span class="mode-desc">15 + 4 + таблицы</span>
+          <span class="mode-count"><strong id="mode-count-exam_v2">20</strong> заданий</span>
+        </button>
       </div>
 
       <label class="start-toggle">
@@ -157,9 +162,9 @@
       <div class="task-topbar">
         <div>
           <div class="section-title" style="margin:0 0 .35rem">Реальный формат экзамена</div>
-          <h2>Составь таблицы маршрутизации по готовой схеме</h2>
+          <h2 id="routing-task-v2-title">Составь таблицы маршрутизации по готовой схеме</h2>
         </div>
-        <button class="btn-ghost" type="button" onclick="resetRoutingTaskV2()">Очистить ответы</button>
+        <button class="btn-ghost" id="routing-task-v2-new-btn" type="button" onclick="resetRoutingTaskV2()">Новая задача</button>
       </div>
 
       <div id="routing-task-v2-container"></div>

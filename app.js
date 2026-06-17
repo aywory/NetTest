@@ -36,6 +36,12 @@ const TEST_MODES = {
     description: '15 одиночных, 4 множественных и задача',
     examSize: 20,
     filter: q => q.type === 'single_choice' || q.type === 'multi_choice'
+  },
+  exam_v2: {
+    title: 'Экзамен v2',
+    description: '15 одиночных, 4 множественных и таблицы маршрутизации',
+    examSize: 20,
+    filter: q => q.type === 'single_choice' || q.type === 'multi_choice'
   }
 };
 
@@ -70,8 +76,8 @@ function showScreen(id) {
 // ══════════════════════════════════════════════════════════════
 function startQuiz(modeId = currentMode) {
   currentMode = TEST_MODES[modeId] ? modeId : 'full';
-  if (currentMode === 'exam') {
-    startExam();
+  if (currentMode === 'exam' || currentMode === 'exam_v2') {
+    startExam(currentMode);
     return;
   }
 
@@ -119,7 +125,7 @@ function updateModeStats() {
   if (totalEl) totalEl.textContent = TEST_MODES[currentMode]?.examSize || getModeQuestions(currentMode).length;
 }
 
-function startExam() {
+function startExam(modeId = 'exam') {
   const singleQuestions = questions.filter(q => q.type === 'single_choice');
   const multiQuestions = questions.filter(q => q.type === 'multi_choice');
 
@@ -133,7 +139,7 @@ function startExam() {
   const multis = pickDistributedQuestions(multiQuestions, 4, examRotation);
   rememberExamQuestions([...singles, ...multis], examRotation);
 
-  currentMode = 'exam';
+  currentMode = modeId === 'exam_v2' ? 'exam_v2' : 'exam';
   shuffled = [...singles, ...multis].map(prepareQuestionForSession);
   current = 0;
   results = [];
@@ -146,12 +152,14 @@ function startExam() {
     multiCount: 4,
     singlePoints: 4,
     multiPoints: 5,
+    taskMode: currentMode === 'exam_v2' ? 'routing_v2' : 'subnet_v1',
+    modeId: currentMode,
     taskPoints: null,
     saved: false,
     final: null
   };
 
-  selectMode('exam');
+  selectMode(currentMode);
   buildProgressBar();
   saveActiveSession();
   showScreen('quiz-screen');
@@ -290,7 +298,11 @@ function beginExamTask() {
   examSession.quizQuestionIds = shuffled.map(q => q.id);
   saveActiveSession();
   showToast('Тестовая часть завершена. Осталась задача на 20 баллов.');
-  startSubnetTask({ examMode: true });
+  if (examSession.taskMode === 'routing_v2') {
+    startRoutingTaskV2({ examMode: true });
+  } else {
+    startSubnetTask({ examMode: true });
+  }
 }
 
 function finishExamFromTask(taskPoints, taskReview = null) {
@@ -307,7 +319,7 @@ function finishExamFromTask(taskPoints, taskReview = null) {
   const topicMap = {
     'Одиночный выбор': { ok: singleScore, total: 60 },
     'Множественный выбор': { ok: multiScore, total: 20 },
-    'Задача 8 лабы': { ok: taskPoints, total: 20 }
+    [examSession.taskMode === 'routing_v2' ? 'Задача v2: таблицы маршрутизации' : 'Задача 8 лабы']: { ok: taskPoints, total: 20 }
   };
 
   examSession.taskPoints = taskPoints;
@@ -333,8 +345,8 @@ function finishExamFromTask(taskPoints, taskReview = null) {
     elapsed,
     topicMap,
     date: Date.now(),
-    modeId: 'exam',
-    modeName: 'Экзамен',
+    modeId: examSession.modeId || 'exam',
+    modeName: TEST_MODES[examSession.modeId || 'exam']?.title || 'Экзамен',
     completed: true
   });
   clearActiveSession();
@@ -345,11 +357,12 @@ function finishExamFromTask(taskPoints, taskReview = null) {
 function showExamResultScreen() {
   if (!examSession?.final) return;
   const final = examSession.final;
+  const modeTitle = TEST_MODES[examSession.modeId || currentMode]?.title || 'Экзамен';
 
   document.getElementById('res-score').textContent = final.score;
   document.getElementById('res-score').className = `score-display score-${scoreClass(final.score)}`;
   document.getElementById('res-comment').textContent =
-    `Экзамен: ${final.totalPoints}/100 баллов. ${examComment(final.score)}`;
+    `${modeTitle}: ${final.totalPoints}/100 баллов. ${examComment(final.score)}`;
   document.getElementById('res-correct').textContent =
     `${final.singleCorrect}/15 + ${final.multiCorrect}/4`;
   document.getElementById('res-time').textContent = formatTime(final.elapsed);
@@ -430,8 +443,8 @@ function saveInterruptedExamSession() {
       'Задача 8 лабы': { ok: 0, total: 20 }
     },
     date: Date.now(),
-    modeId: 'exam',
-    modeName: `Экзамен: прерван (${singleDone + multiDone}/19 тестов)`,
+    modeId: currentMode,
+    modeName: `${TEST_MODES[currentMode]?.title || 'Экзамен'}: прерван (${singleDone + multiDone}/19 тестов)`,
     completed: false
   });
 }
@@ -613,7 +626,7 @@ function recordAnswer(isCorrect) {
 
   if (current + 1 >= shuffled.length) {
     document.getElementById('btn-next').textContent =
-      currentMode === 'exam' ? 'Перейти к задаче →' : 'Завершить →';
+      isExamMode(currentMode) ? 'Перейти к задаче →' : 'Завершить →';
   }
 }
 
@@ -623,7 +636,7 @@ function recordAnswer(isCorrect) {
 function nextQuestion() {
   current++;
   if (current >= shuffled.length) {
-    if (currentMode === 'exam') beginExamTask();
+    if (isExamMode(currentMode)) beginExamTask();
     else showResults();
   } else {
     saveActiveSession();
@@ -696,7 +709,7 @@ function showResults() {
 }
 
 function exitToMenu() {
-  if (currentMode === 'exam') {
+  if (isExamMode(currentMode)) {
     exitExamToMenu();
     return;
   }
@@ -869,7 +882,7 @@ function saveActiveSession(nextCurrent = current) {
     results,
     startTime,
     showHints,
-    examSession: currentMode === 'exam' ? examSession : null,
+    examSession: isExamMode(currentMode) ? examSession : null,
     savedAt: Date.now()
   };
 
@@ -896,7 +909,7 @@ function restoreActiveSession() {
   startTime = Number(session.startTime) || Date.now();
   showHints = Boolean(session.showHints);
   currentMode = TEST_MODES[session.modeId] ? session.modeId : 'full';
-  examSession = currentMode === 'exam' && session.examSession
+  examSession = (currentMode === 'exam' || currentMode === 'exam_v2') && session.examSession
     ? session.examSession
     : null;
   answered = false;
@@ -935,6 +948,10 @@ function isActiveSessionValid(session) {
 
   const modeIds = new Set(getModeQuestions(session.modeId).map(q => q.id));
   return session.questionIds.every(id => questionIds.has(id) && modeIds.has(id));
+}
+
+function isExamMode(modeId) {
+  return modeId === 'exam' || modeId === 'exam_v2';
 }
 
 function clearActiveSession() {

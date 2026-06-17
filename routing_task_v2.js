@@ -1,113 +1,203 @@
 let routingTaskV2 = null;
+let routingTaskV2LastTemplateId = null;
 
-const ROUTING_V2_DATA = {
-  routers: ['R1', 'R2', 'R3', 'R4'],
-  rootRouter: 'R1',
-  externalNextHop: '213.130.10.225',
-  segments: [
-    {
-      id: 'wan',
-      title: 'Глобальная сеть',
-      kind: 'wan',
-      routers: ['R1'],
-      endpointIps: { R1: '213.130.10.226' },
-      given: 'Стрелка в глобальную сеть: 213.130.10.225, интерфейс R1: 213.130.10.226',
-      fixedPrefix: 30
+const ROUTING_V2_TEMPLATES = [
+  {
+    id: 'exam-guide-example',
+    title: 'Экзаменационный пример: R1 с двумя ветками',
+    routers: ['R1', 'R2', 'R3', 'R4'],
+    rootRouter: 'R1',
+    externalNextHop: '213.130.10.225',
+    positions: {
+      width: 1040,
+      height: 390,
+      routers: {
+        R1: { x: 490, y: 150 },
+        R2: { x: 245, y: 295 },
+        R3: { x: 655, y: 295 },
+        R4: { x: 870, y: 295 }
+      },
+      lans: {
+        lan1: { x: 18, y: 260 },
+        lan2: { x: 840, y: 110 },
+        lan3: { x: 905, y: 278 }
+      }
     },
-    {
-      id: 'r1-r2',
-      title: 'R1-R2',
-      kind: 'link',
-      routers: ['R1', 'R2'],
-      endpointIps: { R1: '10.0.3.18', R2: '10.0.3.17' },
-      given: 'R1: 10.0.3.18, R2: 10.0.3.17',
-      fixedPrefix: 30
-    },
-    {
-      id: 'r1-r3',
-      title: 'R1-R3',
-      kind: 'link',
-      routers: ['R1', 'R3'],
-      endpointIps: { R1: '10.0.3.22', R3: '10.0.3.21' },
-      given: 'R1: 10.0.3.22, R3: 10.0.3.21',
-      fixedPrefix: 30
-    },
-    {
-      id: 'r2-r3',
-      title: 'R2-R3',
-      kind: 'link',
-      routers: ['R2', 'R3'],
-      endpointIps: { R2: '10.0.3.25', R3: '10.0.3.26' },
-      given: 'R2: 10.0.3.25, R3: 10.0.3.26',
-      fixedPrefix: 30
-    },
-    {
-      id: 'r3-r4',
-      title: 'R3-R4',
-      kind: 'link',
-      routers: ['R3', 'R4'],
-      endpointIps: { R3: '10.0.3.30', R4: '10.0.3.29' },
-      given: 'R3: 10.0.3.30, R4: 10.0.3.29',
-      fixedPrefix: 30
-    },
-    {
-      id: 'lan1',
-      title: 'LAN1',
-      kind: 'lan',
-      routers: ['R2'],
-      endpointIps: { R2: '10.4.4.37' },
-      hostRange: ['10.4.4.38', '10.4.4.60'],
-      given: 'R2: 10.4.4.37, узлы LAN1: 10.4.4.38-10.4.4.60'
-    },
-    {
-      id: 'lan2',
-      title: 'LAN2',
-      kind: 'lan',
-      routers: ['R4'],
-      endpointIps: { R4: '10.4.4.137' },
-      hostRange: ['10.4.4.138', '10.4.4.180'],
-      given: 'R4: 10.4.4.137, узлы LAN2: 10.4.4.138-10.4.4.180'
-    },
-    {
-      id: 'lan3',
-      title: 'LAN3',
-      kind: 'lan',
-      routers: ['R4'],
-      endpointIps: { R4: '10.4.4.197' },
-      hostRange: ['10.4.4.198', '10.4.4.248'],
-      given: 'R4: 10.4.4.197, узлы LAN3: 10.4.4.198-10.4.4.248'
-    }
-  ],
-  connectedOrder: {
-    R1: ['wan', 'r1-r2', 'r1-r3'],
-    R2: ['r1-r2', 'lan1', 'r2-r3'],
-    R3: ['r1-r3', 'r2-r3', 'r3-r4'],
-    R4: ['r3-r4', 'lan2', 'lan3']
+    segments: [
+      { id: 'wan', title: 'Глобальная сеть', kind: 'wan', routers: ['R1'], endpointIps: { R1: '213.130.10.226' }, fixedPrefix: 30 },
+      { id: 'r1-r2', title: 'R1-R2', kind: 'link', routers: ['R1', 'R2'], endpointIps: { R1: '10.0.3.18', R2: '10.0.3.17' }, fixedPrefix: 30 },
+      { id: 'r1-r3', title: 'R1-R3', kind: 'link', routers: ['R1', 'R3'], endpointIps: { R1: '10.0.3.22', R3: '10.0.3.21' }, fixedPrefix: 30 },
+      { id: 'r2-r3', title: 'R2-R3', kind: 'link', routers: ['R2', 'R3'], endpointIps: { R2: '10.0.3.25', R3: '10.0.3.26' }, fixedPrefix: 30 },
+      { id: 'r3-r4', title: 'R3-R4', kind: 'link', routers: ['R3', 'R4'], endpointIps: { R3: '10.0.3.30', R4: '10.0.3.29' }, fixedPrefix: 30 },
+      { id: 'lan1', title: 'LAN1', kind: 'lan', routers: ['R2'], endpointIps: { R2: '10.4.4.37' }, hostRange: ['10.4.4.38', '10.4.4.60'] },
+      { id: 'lan2', title: 'LAN2', kind: 'lan', routers: ['R4'], endpointIps: { R4: '10.4.4.137' }, hostRange: ['10.4.4.138', '10.4.4.180'] },
+      { id: 'lan3', title: 'LAN3', kind: 'lan', routers: ['R4'], endpointIps: { R4: '10.4.4.197' }, hostRange: ['10.4.4.198', '10.4.4.248'] }
+    ]
   },
-  staticOrder: ['r1-r2', 'r1-r3', 'r2-r3', 'r3-r4', 'lan1', 'lan2', 'lan3', 'wan']
-};
+  {
+    id: 'no-r2-r3-through-r1',
+    title: 'Без R2-R3: связь левой ветки через R1',
+    routers: ['R1', 'R2', 'R3', 'R4'],
+    rootRouter: 'R1',
+    externalNextHop: '213.130.20.1',
+    positions: {
+      width: 1040,
+      height: 390,
+      routers: {
+        R1: { x: 500, y: 145 },
+        R2: { x: 240, y: 295 },
+        R3: { x: 650, y: 295 },
+        R4: { x: 870, y: 295 }
+      },
+      lans: {
+        lan1: { x: 18, y: 260 },
+        lan2: { x: 575, y: 95 },
+        lan3: { x: 905, y: 278 }
+      }
+    },
+    segments: [
+      { id: 'wan', title: 'Глобальная сеть', kind: 'wan', routers: ['R1'], endpointIps: { R1: '213.130.20.2' }, fixedPrefix: 30 },
+      { id: 'r1-r2', title: 'R1-R2', kind: 'link', routers: ['R1', 'R2'], endpointIps: { R1: '10.0.8.2', R2: '10.0.8.1' }, fixedPrefix: 30 },
+      { id: 'r1-r3', title: 'R1-R3', kind: 'link', routers: ['R1', 'R3'], endpointIps: { R1: '10.0.8.5', R3: '10.0.8.6' }, fixedPrefix: 30 },
+      { id: 'r3-r4', title: 'R3-R4', kind: 'link', routers: ['R3', 'R4'], endpointIps: { R3: '10.0.8.9', R4: '10.0.8.10' }, fixedPrefix: 30 },
+      { id: 'lan1', title: 'LAN1', kind: 'lan', routers: ['R2'], endpointIps: { R2: '10.5.5.33' }, hostRange: ['10.5.5.34', '10.5.5.58'] },
+      { id: 'lan2', title: 'LAN2', kind: 'lan', routers: ['R3'], endpointIps: { R3: '10.5.5.97' }, hostRange: ['10.5.5.98', '10.5.5.122'] },
+      { id: 'lan3', title: 'LAN3', kind: 'lan', routers: ['R4'], endpointIps: { R4: '10.5.5.193' }, hostRange: ['10.5.5.194', '10.5.5.240'] }
+    ]
+  },
+  {
+    id: 'line-no-r1-r3',
+    title: 'Линейная топология: R1-R2-R3-R4',
+    routers: ['R1', 'R2', 'R3', 'R4'],
+    rootRouter: 'R1',
+    externalNextHop: '213.130.30.5',
+    positions: {
+      width: 1040,
+      height: 390,
+      routers: {
+        R1: { x: 190, y: 190 },
+        R2: { x: 410, y: 190 },
+        R3: { x: 630, y: 190 },
+        R4: { x: 850, y: 190 }
+      },
+      lans: {
+        lan1: { x: 315, y: 286 },
+        lan2: { x: 555, y: 286 },
+        lan3: { x: 790, y: 286 },
+        lan4: { x: 905, y: 72 }
+      }
+    },
+    segments: [
+      { id: 'wan', title: 'Глобальная сеть', kind: 'wan', routers: ['R1'], endpointIps: { R1: '213.130.30.6' }, fixedPrefix: 30 },
+      { id: 'r1-r2', title: 'R1-R2', kind: 'link', routers: ['R1', 'R2'], endpointIps: { R1: '10.0.9.1', R2: '10.0.9.2' }, fixedPrefix: 30 },
+      { id: 'r2-r3', title: 'R2-R3', kind: 'link', routers: ['R2', 'R3'], endpointIps: { R2: '10.0.9.5', R3: '10.0.9.6' }, fixedPrefix: 30 },
+      { id: 'r3-r4', title: 'R3-R4', kind: 'link', routers: ['R3', 'R4'], endpointIps: { R3: '10.0.9.9', R4: '10.0.9.10' }, fixedPrefix: 30 },
+      { id: 'lan1', title: 'LAN1', kind: 'lan', routers: ['R2'], endpointIps: { R2: '10.6.6.17' }, hostRange: ['10.6.6.18', '10.6.6.28'] },
+      { id: 'lan2', title: 'LAN2', kind: 'lan', routers: ['R3'], endpointIps: { R3: '10.6.6.65' }, hostRange: ['10.6.6.66', '10.6.6.90'] },
+      { id: 'lan3', title: 'LAN3', kind: 'lan', routers: ['R4'], endpointIps: { R4: '10.6.6.129' }, hostRange: ['10.6.6.130', '10.6.6.180'] },
+      { id: 'lan4', title: 'LAN4', kind: 'lan', routers: ['R4'], endpointIps: { R4: '10.6.6.193' }, hostRange: ['10.6.6.194', '10.6.6.230'] }
+    ]
+  },
+  {
+    id: 'three-router-chain',
+    title: 'Три маршрутизатора цепочкой',
+    routers: ['R1', 'R2', 'R3'],
+    rootRouter: 'R1',
+    externalNextHop: '213.130.40.9',
+    positions: {
+      width: 900,
+      height: 390,
+      routers: {
+        R1: { x: 210, y: 185 },
+        R2: { x: 450, y: 185 },
+        R3: { x: 690, y: 185 }
+      },
+      lans: {
+        lan1: { x: 95, y: 280 },
+        lan2: { x: 385, y: 280 },
+        lan3: { x: 680, y: 280 }
+      }
+    },
+    segments: [
+      { id: 'wan', title: 'Глобальная сеть', kind: 'wan', routers: ['R1'], endpointIps: { R1: '213.130.40.10' }, fixedPrefix: 30 },
+      { id: 'r1-r2', title: 'R1-R2', kind: 'link', routers: ['R1', 'R2'], endpointIps: { R1: '10.0.10.1', R2: '10.0.10.2' }, fixedPrefix: 30 },
+      { id: 'r2-r3', title: 'R2-R3', kind: 'link', routers: ['R2', 'R3'], endpointIps: { R2: '10.0.10.5', R3: '10.0.10.6' }, fixedPrefix: 30 },
+      { id: 'lan1', title: 'LAN1', kind: 'lan', routers: ['R1'], endpointIps: { R1: '10.7.7.17' }, hostRange: ['10.7.7.18', '10.7.7.29'] },
+      { id: 'lan2', title: 'LAN2', kind: 'lan', routers: ['R2'], endpointIps: { R2: '10.7.7.65' }, hostRange: ['10.7.7.66', '10.7.7.88'] },
+      { id: 'lan3', title: 'LAN3', kind: 'lan', routers: ['R3'], endpointIps: { R3: '10.7.7.129' }, hostRange: ['10.7.7.130', '10.7.7.178'] }
+    ]
+  },
+  {
+    id: 'star-through-r1',
+    title: 'Звезда: все ветки идут через R1',
+    routers: ['R1', 'R2', 'R3', 'R4'],
+    rootRouter: 'R1',
+    externalNextHop: '213.130.50.13',
+    positions: {
+      width: 1040,
+      height: 460,
+      routers: {
+        R1: { x: 510, y: 145 },
+        R2: { x: 245, y: 280 },
+        R3: { x: 510, y: 280 },
+        R4: { x: 775, y: 280 }
+      },
+      lans: {
+        lan1: { x: 28, y: 245 },
+        lan2: { x: 425, y: 350 },
+        lan3: { x: 835, y: 245 }
+      }
+    },
+    segments: [
+      { id: 'wan', title: 'Глобальная сеть', kind: 'wan', routers: ['R1'], endpointIps: { R1: '213.130.50.14' }, fixedPrefix: 30 },
+      { id: 'r1-r2', title: 'R1-R2', kind: 'link', routers: ['R1', 'R2'], endpointIps: { R1: '10.0.11.1', R2: '10.0.11.2' }, fixedPrefix: 30 },
+      { id: 'r1-r3', title: 'R1-R3', kind: 'link', routers: ['R1', 'R3'], endpointIps: { R1: '10.0.11.5', R3: '10.0.11.6' }, fixedPrefix: 30 },
+      { id: 'r1-r4', title: 'R1-R4', kind: 'link', routers: ['R1', 'R4'], endpointIps: { R1: '10.0.11.9', R4: '10.0.11.10' }, fixedPrefix: 30 },
+      { id: 'lan1', title: 'LAN1', kind: 'lan', routers: ['R2'], endpointIps: { R2: '10.8.8.33' }, hostRange: ['10.8.8.34', '10.8.8.55'] },
+      { id: 'lan2', title: 'LAN2', kind: 'lan', routers: ['R3'], endpointIps: { R3: '10.8.8.97' }, hostRange: ['10.8.8.98', '10.8.8.125'] },
+      { id: 'lan3', title: 'LAN3', kind: 'lan', routers: ['R4'], endpointIps: { R4: '10.8.8.193' }, hostRange: ['10.8.8.194', '10.8.8.238'] }
+    ]
+  }
+];
 
-function startRoutingTaskV2() {
+function getRoutingV2Templates() {
+  return ROUTING_V2_TEMPLATES;
+}
+
+function startRoutingTaskV2(options = {}) {
   if (routingTaskV2?.dirty && !routingTaskV2.saved) {
-    const ok = confirm('Начать заново? Введённые ответы в v2 будут потеряны.');
+    const ok = confirm('Начать новую задачу v2? Введённые ответы будут потеряны.');
     if (!ok) return;
   }
 
-  routingTaskV2 = buildRoutingTaskV2();
+  routingTaskV2 = buildRoutingTaskV2(pickRoutingV2Template());
+  routingTaskV2.examMode = Boolean(options.examMode);
+  routingTaskV2LastTemplateId = routingTaskV2.templateId;
   renderRoutingTaskV2();
+  updateRoutingV2ScreenChrome();
   showScreen('routing-task-v2-screen');
 }
 
 function resetRoutingTaskV2() {
   if (routingTaskV2?.dirty && !routingTaskV2.saved) {
-    const ok = confirm('Очистить все ответы в тренажёре v2?');
+    const ok = confirm('Создать новую задачу v2? Введённые ответы будут потеряны.');
     if (!ok) return;
   }
-  routingTaskV2 = buildRoutingTaskV2();
+  routingTaskV2 = buildRoutingTaskV2(pickRoutingV2Template(routingTaskV2?.templateId));
+  routingTaskV2LastTemplateId = routingTaskV2.templateId;
   renderRoutingTaskV2();
+  updateRoutingV2ScreenChrome();
 }
 
 function exitRoutingTaskV2() {
+  if (routingTaskV2?.examMode) {
+    const ok = confirm('Прервать экзамен и сохранить его как незавершённый?');
+    if (!ok) return;
+    if (typeof abortExamFromTask === 'function') abortExamFromTask();
+    else showScreen('start-screen');
+    return;
+  }
+
   if (routingTaskV2?.dirty && !routingTaskV2.saved) {
     const ok = confirm('Выйти в меню? Введённые ответы в v2 не сохранятся.');
     if (!ok) return;
@@ -115,38 +205,78 @@ function exitRoutingTaskV2() {
   showScreen('start-screen');
 }
 
-function buildRoutingTaskV2() {
-  const segments = ROUTING_V2_DATA.segments.map(seg => {
+function updateRoutingV2ScreenChrome() {
+  const title = document.getElementById('routing-task-v2-title');
+  const newButton = document.getElementById('routing-task-v2-new-btn');
+  if (title) {
+    title.textContent = routingTaskV2?.examMode
+      ? 'Экзамен v2: составь таблицы маршрутизации'
+      : 'Составь таблицы маршрутизации по готовой схеме';
+  }
+  if (newButton) {
+    newButton.style.display = routingTaskV2?.examMode ? 'none' : 'inline-flex';
+  }
+}
+
+function pickRoutingV2Template(previousId = routingTaskV2LastTemplateId) {
+  const pool = ROUTING_V2_TEMPLATES.filter(template => template.id !== previousId);
+  const source = pool.length ? pool : ROUTING_V2_TEMPLATES;
+  return source[Math.floor(Math.random() * source.length)];
+}
+
+function buildRoutingTaskV2(template = ROUTING_V2_TEMPLATES[0]) {
+  const segments = template.segments.map((seg, index) => {
     const prefix = seg.fixedPrefix ?? computeRoutingV2LanPrefix(seg);
     const anchorIp = routingV2SegmentAnchorIp(seg);
     const network = networkOf(anchorIp, prefix);
     const broadcast = broadcastOf(network, prefix);
     return {
       ...seg,
+      sourceIndex: index,
       prefix,
       network,
       broadcast,
       mask: prefixToMask(prefix),
       size: blockSize(prefix),
-      usable: usableHosts(prefix)
+      usable: usableHosts(prefix),
+      given: routingV2SegmentGiven(seg, template)
     };
   });
   const byId = Object.fromEntries(segments.map(seg => [seg.id, seg]));
-  const graph = buildRoutingV2Graph(segments);
-  const tables = Object.fromEntries(ROUTING_V2_DATA.routers.map(router => [
+  const graph = buildRoutingV2Graph(template.routers, segments);
+  const tables = Object.fromEntries(template.routers.map(router => [
     router,
-    buildRoutingV2Table(router, segments, byId, graph)
+    buildRoutingV2Table(router, template, segments, byId, graph)
   ]));
 
   return {
+    template,
+    templateId: template.id,
+    templateTitle: template.title,
+    routers: [...template.routers],
+    rootRouter: template.rootRouter,
+    externalNextHop: template.externalNextHop,
     segments,
     byId,
     graph,
     tables,
+    routeRowCounts: Object.fromEntries(template.routers.map(router => [router, 0])),
     startTime: Date.now(),
     dirty: false,
     saved: false
   };
+}
+
+function routingV2SegmentGiven(seg, template) {
+  if (seg.kind === 'wan') {
+    const router = seg.routers[0];
+    return `Стрелка в глобальную сеть: ${template.externalNextHop}, интерфейс ${router}: ${seg.endpointIps[router]}`;
+  }
+  if (seg.kind === 'link') {
+    return seg.routers.map(router => `${router}: ${seg.endpointIps[router]}`).join(', ');
+  }
+  const router = seg.routers[0];
+  return `${router}: ${seg.endpointIps[router]}, узлы ${seg.title}: ${seg.hostRange[0]}-${seg.hostRange[1]}`;
 }
 
 function computeRoutingV2LanPrefix(seg) {
@@ -171,8 +301,8 @@ function routingV2SegmentAnchorIp(seg) {
   return ipToInt(firstIp);
 }
 
-function buildRoutingV2Graph(segments) {
-  const graph = Object.fromEntries(ROUTING_V2_DATA.routers.map(router => [router, []]));
+function buildRoutingV2Graph(routers, segments) {
+  const graph = Object.fromEntries(routers.map(router => [router, []]));
   segments
     .filter(seg => seg.kind === 'link' && seg.routers.length === 2)
     .forEach(seg => {
@@ -183,60 +313,73 @@ function buildRoutingV2Graph(segments) {
   return graph;
 }
 
-function buildRoutingV2Table(router, segments, byId, graph) {
-  const connectedIds = ROUTING_V2_DATA.connectedOrder[router] || [];
-  const connectedRows = connectedIds.map(id => {
-    const seg = byId[id];
+function buildRoutingV2Table(router, template, segments, byId, graph) {
+  const connectedRows = sortRoutingV2ConnectedSegments(
+    segments.filter(seg => seg.routers.includes(router))
+  ).map(seg => ({
+    type: 'C',
+    segmentId: seg.id,
+    network: seg.network,
+    prefix: seg.prefix,
+    nextKind: 'direct',
+    nextLabel: routingV2DirectLabel(router, seg)
+  }));
+
+  const staticRows = sortRoutingV2StaticSegments(
+    segments.filter(seg => !seg.routers.includes(router))
+  ).map(seg => {
+    const nextRouter = findRoutingV2NextRouter(router, seg, graph, template.routers);
+    const shared = findRoutingV2SharedLink(router, nextRouter, segments);
+    if (!shared) throw new Error(`No shared link from ${router} to ${nextRouter}`);
     return {
-      type: 'C',
+      type: 'S',
       segmentId: seg.id,
       network: seg.network,
       prefix: seg.prefix,
-      nextKind: 'direct',
-      nextLabel: routingV2DirectLabel(router, seg)
+      nextKind: 'ip',
+      nextHop: ipToInt(shared.endpointIps[nextRouter]),
+      nextRouter,
+      viaSegmentId: shared.id
     };
   });
-
-  const staticRows = ROUTING_V2_DATA.staticOrder
-    .map(id => byId[id])
-    .filter(seg => seg && !seg.routers.includes(router))
-    .map(seg => {
-      const nextRouter = findRoutingV2NextRouter(router, seg, graph);
-      const shared = findRoutingV2SharedLink(router, nextRouter, segments);
-      return {
-        type: 'S',
-        segmentId: seg.id,
-        network: seg.network,
-        prefix: seg.prefix,
-        nextKind: 'ip',
-        nextHop: ipToInt(shared.endpointIps[nextRouter]),
-        nextRouter,
-        viaSegmentId: shared.id
-      };
-    });
 
   return [
     ...connectedRows,
     ...staticRows,
-    buildRoutingV2DefaultRoute(router, graph, segments)
+    buildRoutingV2DefaultRoute(router, template, graph, segments)
   ];
 }
 
-function buildRoutingV2DefaultRoute(router, graph, segments) {
-  if (router === ROUTING_V2_DATA.rootRouter) {
+function sortRoutingV2ConnectedSegments(segments) {
+  const kindOrder = { wan: 0, link: 1, lan: 2 };
+  return [...segments].sort((a, b) =>
+    kindOrder[a.kind] - kindOrder[b.kind] || a.sourceIndex - b.sourceIndex
+  );
+}
+
+function sortRoutingV2StaticSegments(segments) {
+  const kindOrder = { link: 0, lan: 1, wan: 2 };
+  return [...segments].sort((a, b) =>
+    kindOrder[a.kind] - kindOrder[b.kind] || a.sourceIndex - b.sourceIndex
+  );
+}
+
+function buildRoutingV2DefaultRoute(router, template, graph, segments) {
+  if (router === template.rootRouter) {
     return {
       type: 'S*',
       segmentId: 'default',
       network: 0,
       prefix: 0,
       nextKind: 'ip',
-      nextHop: ipToInt(ROUTING_V2_DATA.externalNextHop),
+      nextHop: ipToInt(template.externalNextHop),
       nextRouter: 'global'
     };
   }
 
-  const nextRouter = findRoutingV2NextRouterToRouter(router, ROUTING_V2_DATA.rootRouter, graph);
+  const nextRouter = findRoutingV2NextRouterToRouter(router, template.rootRouter, graph, template.routers);
   const shared = findRoutingV2SharedLink(router, nextRouter, segments);
+  if (!shared) throw new Error(`No default next-hop from ${router} to ${template.rootRouter}`);
   return {
     type: 'S*',
     segmentId: 'default',
@@ -249,24 +392,24 @@ function buildRoutingV2DefaultRoute(router, graph, segments) {
   };
 }
 
-function findRoutingV2NextRouter(fromRouter, targetSegment, graph) {
-  const targets = [...targetSegment.routers].sort(routingV2RouterSort);
+function findRoutingV2NextRouter(fromRouter, targetSegment, graph, routers = routingTaskV2?.routers || []) {
+  const targets = [...targetSegment.routers].sort((a, b) => routingV2RouterSort(a, b, routers));
   const routes = targets
     .map(target => ({
       target,
-      path: findRoutingV2Path(fromRouter, target, graph)
+      path: findRoutingV2Path(fromRouter, target, graph, routers)
     }))
     .filter(item => item.path.length > 1)
-    .sort((a, b) => a.path.length - b.path.length || routingV2RouterSort(a.target, b.target));
+    .sort((a, b) => a.path.length - b.path.length || routingV2RouterSort(a.target, b.target, routers));
   return routes[0]?.path[1] || null;
 }
 
-function findRoutingV2NextRouterToRouter(fromRouter, targetRouter, graph) {
-  const path = findRoutingV2Path(fromRouter, targetRouter, graph);
+function findRoutingV2NextRouterToRouter(fromRouter, targetRouter, graph, routers = routingTaskV2?.routers || []) {
+  const path = findRoutingV2Path(fromRouter, targetRouter, graph, routers);
   return path[1] || null;
 }
 
-function findRoutingV2Path(fromRouter, targetRouter, graph) {
+function findRoutingV2Path(fromRouter, targetRouter, graph, routers = routingTaskV2?.routers || []) {
   if (fromRouter === targetRouter) return [fromRouter];
 
   const queue = [[fromRouter]];
@@ -274,7 +417,7 @@ function findRoutingV2Path(fromRouter, targetRouter, graph) {
   while (queue.length) {
     const path = queue.shift();
     const current = path[path.length - 1];
-    const nextItems = [...(graph[current] || [])].sort((a, b) => routingV2RouterSort(a.router, b.router));
+    const nextItems = [...(graph[current] || [])].sort((a, b) => routingV2RouterSort(a.router, b.router, routers));
     for (const item of nextItems) {
       if (visited.has(item.router)) continue;
       const nextPath = [...path, item.router];
@@ -293,8 +436,8 @@ function findRoutingV2SharedLink(routerA, routerB, segments = routingTaskV2?.seg
   );
 }
 
-function routingV2RouterSort(a, b) {
-  return ROUTING_V2_DATA.routers.indexOf(a) - ROUTING_V2_DATA.routers.indexOf(b);
+function routingV2RouterSort(a, b, routers = routingTaskV2?.routers || []) {
+  return routers.indexOf(a) - routers.indexOf(b);
 }
 
 function routingV2DirectLabel(router, seg) {
@@ -315,88 +458,123 @@ function renderRoutingTaskV2() {
 }
 
 function renderRoutingV2Statement() {
+  const lanCount = routingTaskV2.segments.filter(seg => seg.kind === 'lan').length;
+  const linkCount = routingTaskV2.segments.filter(seg => seg.kind === 'link').length;
+  const note = routingTaskV2.examMode ? '' : `
+      <div class="routing-v2-note">
+        <strong>Что дано:</strong> ${routingTaskV2.routers.length} маршрутизатора, ${lanCount} LAN, ${linkCount} router-to-router линка, выход в глобальную сеть через ${routingTaskV2.rootRouter}. Сети, маски, типы маршрутов и next-hop нужно вывести самостоятельно.
+      </div>
+    `;
   return `
     <div class="task-card task-statement routing-v2-statement">
-      <div class="task-kicker">Условие задачи</div>
+      <div class="task-kicker">Условие задачи // ${routingTaskV2.templateTitle}</div>
       <h3>На рисунке показана структура локальной сети Intranet. Стрелкой показан маршрут, ведущий в глобальную сеть, подписаны адреса узлов.</h3>
       <p>Приведите содержимое таблиц маршрутизации всех показанных на схеме маршрутизаторов и опишите активное и пассивное оборудование, если каждое облако - это сегмент коммутируемой сети 1000Base-T.</p>
       ${renderRoutingV2Diagram()}
-      <div class="routing-v2-note">
-        <strong>Что дано:</strong> только схема и подписи адресов. Сети, маски, типы маршрутов и next-hop нужно вывести самостоятельно.
-      </div>
+      ${note}
     </div>
   `;
 }
 
 function renderRoutingV2Diagram() {
+  const positions = routingTaskV2.template.positions;
+  const lines = [];
+  const nodes = [];
+  const labels = [];
+
+  routingTaskV2.segments.forEach(seg => {
+    if (seg.kind === 'wan') {
+      const router = seg.routers[0];
+      const pos = positions.routers[router];
+      lines.push(renderRoutingV2Line(pos.x, pos.y - 92, pos.x, pos.y - 29, true));
+      labels.push(renderRoutingV2TextLabel(routingTaskV2.externalNextHop, pos.x - 72, pos.y - 104, 'middle'));
+      labels.push(renderRoutingV2TextLabel(seg.endpointIps[router], pos.x + 72, pos.y - 43, 'middle'));
+    }
+
+    if (seg.kind === 'link') {
+      const [a, b] = seg.routers;
+      const aPos = positions.routers[a];
+      const bPos = positions.routers[b];
+      lines.push(renderRoutingV2Line(aPos.x, aPos.y, bPos.x, bPos.y));
+      labels.push(renderRoutingV2EndpointLabel(seg.endpointIps[a], aPos, bPos, 0.24, -18));
+      labels.push(renderRoutingV2EndpointLabel(seg.endpointIps[b], aPos, bPos, 0.76, -18));
+    }
+
+    if (seg.kind === 'lan') {
+      const router = seg.routers[0];
+      const routerPos = positions.routers[router];
+      const lanPos = positions.lans[seg.id];
+      const cloudCenter = routingV2CloudCenter(lanPos);
+      lines.push(renderRoutingV2Line(routerPos.x, routerPos.y, cloudCenter.x, cloudCenter.y));
+      nodes.push(renderRoutingV2Cloud(seg, lanPos));
+      labels.push(renderRoutingV2TextLabel(`${seg.hostRange[0]}-${seg.hostRange[1]}`, cloudCenter.x, lanPos.y - 15, 'middle'));
+      labels.push(renderRoutingV2EndpointLabel(seg.endpointIps[router], routerPos, cloudCenter, 0.34, 18));
+    }
+  });
+
+  routingTaskV2.routers.forEach(router => {
+    nodes.push(renderRoutingV2Router(router, positions.routers[router]));
+  });
+
   return `
     <div class="routing-v2-diagram" aria-label="Схема сети Intranet">
-      <svg viewBox="0 0 980 390" role="img" aria-label="R1 соединен с глобальной сетью, R2, R3, R4 и LAN1-LAN3">
+      <svg viewBox="0 0 ${positions.width} ${positions.height}" role="img" aria-label="Схема задачи ${escapeRoutingV2Html(routingTaskV2.templateTitle)}">
         <defs>
-          <marker id="routing-v2-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <marker id="routing-v2-arrow-${routingTaskV2.templateId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M 0 0 L 10 5 L 0 10 z"></path>
           </marker>
         </defs>
-
-        <line class="routing-v2-line" x1="475" y1="80" x2="475" y2="140" marker-start="url(#routing-v2-arrow)"></line>
-        <line class="routing-v2-line" x1="475" y1="175" x2="260" y2="260"></line>
-        <line class="routing-v2-line" x1="505" y1="175" x2="610" y2="260"></line>
-        <line class="routing-v2-line" x1="260" y1="295" x2="610" y2="295"></line>
-        <line class="routing-v2-line" x1="650" y1="295" x2="805" y2="295"></line>
-        <line class="routing-v2-line" x1="208" y1="295" x2="110" y2="295"></line>
-        <line class="routing-v2-line" x1="830" y1="275" x2="850" y2="170"></line>
-        <line class="routing-v2-line" x1="850" y1="305" x2="875" y2="315"></line>
-
-        <text class="routing-v2-ip" x="390" y="52">213.130.10.225</text>
-        <text class="routing-v2-ip" x="500" y="118">213.130.10.226</text>
-        <text class="routing-v2-ip" x="300" y="180">10.0.3.18</text>
-        <text class="routing-v2-ip" x="210" y="245">10.0.3.17</text>
-        <text class="routing-v2-ip" x="515" y="190">10.0.3.22</text>
-        <text class="routing-v2-ip" x="600" y="245">10.0.3.21</text>
-        <text class="routing-v2-ip" x="330" y="285">10.0.3.25</text>
-        <text class="routing-v2-ip" x="475" y="285">10.0.3.26</text>
-        <text class="routing-v2-ip" x="685" y="285">10.0.3.30</text>
-        <text class="routing-v2-ip" x="770" y="282">10.0.3.29</text>
-
-        <g class="routing-v2-cloud">
-          <path d="M25 278 C18 258 45 249 58 261 C70 241 105 247 108 270 C132 269 142 294 124 310 L42 310 C20 309 10 291 25 278 Z"></path>
-          <text x="50" y="294">LAN1</text>
-          <text class="routing-v2-cloud-ip" x="9" y="245">10.4.4.38-10.4.4.60</text>
-        </g>
-        <g class="routing-v2-cloud">
-          <path d="M805 143 C798 123 825 114 838 126 C850 106 885 112 888 135 C912 134 922 159 904 175 L822 175 C800 174 790 156 805 143 Z"></path>
-          <text x="830" y="159">LAN2</text>
-          <text class="routing-v2-cloud-ip" x="775" y="96">10.4.4.138-10.4.4.180</text>
-        </g>
-        <g class="routing-v2-cloud">
-          <path d="M875 298 C868 278 895 269 908 281 C920 261 955 267 958 290 C982 289 992 314 974 330 L892 330 C870 329 860 311 875 298 Z"></path>
-          <text x="900" y="314">LAN3</text>
-          <text class="routing-v2-cloud-ip" x="835" y="250">10.4.4.198-10.4.4.248</text>
-        </g>
-
-        <g class="routing-v2-router" transform="translate(475 160)">
-          <circle r="27"></circle>
-          <text y="5">R1</text>
-        </g>
-        <g class="routing-v2-router" transform="translate(240 295)">
-          <circle r="27"></circle>
-          <text y="5">R2</text>
-        </g>
-        <g class="routing-v2-router" transform="translate(630 295)">
-          <circle r="27"></circle>
-          <text y="5">R3</text>
-        </g>
-        <g class="routing-v2-router" transform="translate(830 295)">
-          <circle r="27"></circle>
-          <text y="5">R4</text>
-        </g>
-
-        <text class="routing-v2-ip" x="137" y="324">10.4.4.37</text>
-        <text class="routing-v2-ip" x="845" y="240">10.4.4.137</text>
-        <text class="routing-v2-ip" x="790" y="345">10.4.4.197</text>
+        ${lines.join('')}
+        ${nodes.join('')}
+        <g class="routing-v2-labels">${labels.join('')}</g>
       </svg>
     </div>
   `;
+}
+
+function renderRoutingV2Line(x1, y1, x2, y2, arrowStart = false) {
+  const marker = arrowStart ? ` marker-start="url(#routing-v2-arrow-${routingTaskV2.templateId})"` : '';
+  return `<line class="routing-v2-line" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"${marker}></line>`;
+}
+
+function renderRoutingV2Router(router, pos) {
+  return `
+    <g class="routing-v2-router" transform="translate(${pos.x} ${pos.y})">
+      <circle r="27"></circle>
+      <text y="5">${router}</text>
+    </g>
+  `;
+}
+
+function renderRoutingV2Cloud(seg, pos) {
+  return `
+    <g class="routing-v2-cloud" transform="translate(${pos.x} ${pos.y})">
+      <path d="M17 32 C8 10 42 2 58 17 C74 -5 118 2 124 28 C151 27 164 58 143 75 L39 75 C13 74 -2 49 17 32 Z"></path>
+      <text x="52" y="49">${seg.title}</text>
+    </g>
+  `;
+}
+
+function routingV2CloudCenter(pos) {
+  return { x: pos.x + 74, y: pos.y + 42 };
+}
+
+function renderRoutingV2EndpointLabel(text, start, end, t, offset) {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const len = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+  const nx = -dy / len;
+  const ny = dx / len;
+  return renderRoutingV2TextLabel(
+    text,
+    start.x + dx * t + nx * offset,
+    start.y + dy * t + ny * offset,
+    'middle'
+  );
+}
+
+function renderRoutingV2TextLabel(text, x, y, anchor = 'middle') {
+  return `<text class="routing-v2-ip" x="${round1(x)}" y="${round1(y)}" text-anchor="${anchor}">${escapeRoutingV2Html(text)}</text>`;
 }
 
 function renderRoutingV2NetworkStage() {
@@ -418,10 +596,7 @@ function renderRoutingV2NetworkStage() {
           </tbody>
         </table>
       </div>
-      <div class="task-actions">
-        <button class="btn-submit" type="button" onclick="checkRoutingV2Networks()">Проверить сети</button>
-      </div>
-      <div class="task-feedback" id="routing-v2-feedback-networks"></div>
+      ${routingV2StageActions('networks', 'Проверить сети')}
     </div>
   `;
 }
@@ -430,42 +605,78 @@ function renderRoutingV2TablesStage() {
   return `
     <div class="task-card">
       <h3>2. Заполни таблицы маршрутизации всех маршрутизаторов</h3>
-      <p class="routing-v2-muted">Порядок строк не важен. В каждой таблице должны быть все сети: LAN, router-to-router, глобальная сеть и маршрут по умолчанию.</p>
+      ${routingTaskV2.examMode ? '' : '<p class="routing-v2-muted">Порядок строк не важен. В каждой таблице должны быть все сети: LAN, router-to-router, глобальная сеть и маршрут по умолчанию.</p>'}
       <div class="routing-v2-router-grid">
-        ${ROUTING_V2_DATA.routers.map(router => renderRoutingV2RouterTable(router)).join('')}
+        ${routingTaskV2.routers.map(router => renderRoutingV2RouterTable(router)).join('')}
       </div>
-      <div class="task-actions">
-        <button class="btn-submit" type="button" onclick="checkRoutingV2Tables()">Проверить таблицы</button>
-      </div>
-      <div class="task-feedback" id="routing-v2-feedback-tables"></div>
+      ${routingV2StageActions('tables', 'Проверить таблицы')}
     </div>
   `;
 }
 
 function renderRoutingV2RouterTable(router) {
-  const rows = routingTaskV2.tables[router];
   return `
     <section class="routing-v2-router-card">
       <div class="routing-v2-router-head">
         <strong>${router}</strong>
-        <span>${rows.length} строк</span>
+        <span>количество строк определи сам</span>
       </div>
       <div class="task-table-wrap">
         <table class="task-table routing-v2-route-table">
           <thead><tr><th>Тип</th><th>Сеть</th><th>Маска или префикс</th><th>Next-hop / интерфейс</th></tr></thead>
-          <tbody>
-            ${rows.map((_, index) => `
-              <tr>
-                <td>${routingV2Input(`route-${router}-${index}-type`)}</td>
-                <td>${routingV2Input(`route-${router}-${index}-network`)}</td>
-                <td>${routingV2Input(`route-${router}-${index}-mask`)}</td>
-                <td>${routingV2Input(`route-${router}-${index}-next`)}</td>
-              </tr>
-            `).join('')}
+          <tbody id="routing-v2-routes-${router}">
+            <tr class="routing-v2-empty-row" id="routing-v2-empty-${router}">
+              <td colspan="4">Добавь строки таблицы маршрутизации для ${router}</td>
+            </tr>
           </tbody>
         </table>
       </div>
+      <div class="routing-v2-row-actions">
+        <button class="btn-ghost" type="button" onclick="addRoutingV2RouteRow('${router}')">Добавить строку</button>
+      </div>
     </section>
+  `;
+}
+
+function addRoutingV2RouteRow(router) {
+  if (!routingTaskV2?.routeRowCounts || !routingTaskV2.routers.includes(router)) return;
+
+  const index = routingTaskV2.routeRowCounts[router]++;
+  const tbody = document.getElementById(`routing-v2-routes-${router}`);
+  const empty = document.getElementById(`routing-v2-empty-${router}`);
+  if (!tbody) return;
+
+  empty?.remove();
+  tbody.insertAdjacentHTML('beforeend', renderRoutingV2RouteInputRow(router, index));
+  markRoutingTaskV2Dirty();
+}
+
+function removeRoutingV2RouteRow(router, index) {
+  document.getElementById(`routing-v2-route-row-${router}-${index}`)?.remove();
+  const tbody = document.getElementById(`routing-v2-routes-${router}`);
+  if (tbody && !tbody.querySelector('tr')) {
+    tbody.innerHTML = `
+      <tr class="routing-v2-empty-row" id="routing-v2-empty-${router}">
+        <td colspan="4">Добавь строки таблицы маршрутизации для ${router}</td>
+      </tr>
+    `;
+  }
+  markRoutingTaskV2Dirty();
+}
+
+function renderRoutingV2RouteInputRow(router, index) {
+  return `
+    <tr id="routing-v2-route-row-${router}-${index}" data-routing-v2-router="${router}" data-routing-v2-index="${index}">
+      <td>${routingV2Input(`route-${router}-${index}-type`)}</td>
+      <td>${routingV2Input(`route-${router}-${index}-network`)}</td>
+      <td>${routingV2Input(`route-${router}-${index}-mask`)}</td>
+      <td>
+        <div class="routing-v2-next-cell">
+          ${routingV2Input(`route-${router}-${index}-next`)}
+          <button class="routing-v2-remove-row" type="button" aria-label="Удалить строку" onclick="removeRoutingV2RouteRow('${router}', ${index})">×</button>
+        </div>
+      </td>
+    </tr>
   `;
 }
 
@@ -483,23 +694,36 @@ function renderRoutingV2EquipmentStage() {
           <textarea class="textarea-input routing-v2-textarea" id="routing-v2-equipment-passive" oninput="markRoutingTaskV2Dirty()"></textarea>
         </label>
       </div>
-      <div class="task-actions">
-        <button class="btn-submit" type="button" onclick="checkRoutingV2Equipment()">Проверить оборудование</button>
-      </div>
-      <div class="task-feedback" id="routing-v2-feedback-equipment"></div>
+      ${routingV2StageActions('equipment', 'Проверить оборудование')}
     </div>
   `;
 }
 
 function renderRoutingV2FinalStage() {
+  const buttonText = routingTaskV2.examMode ? 'Завершить экзамен' : 'Проверить всю задачу';
   return `
     <div class="task-card">
       <h3>4. Итоговая проверка</h3>
       <div class="task-actions">
-        <button class="btn-primary" type="button" onclick="checkRoutingTaskV2Final()">Проверить всю задачу</button>
+        <button class="btn-primary" type="button" onclick="checkRoutingTaskV2Final()">${buttonText}</button>
       </div>
       <div class="task-feedback" id="routing-v2-feedback-final"></div>
     </div>
+  `;
+}
+
+function routingV2StageActions(stage, label) {
+  if (routingTaskV2.examMode) return '';
+  const fn = {
+    networks: 'checkRoutingV2Networks',
+    tables: 'checkRoutingV2Tables',
+    equipment: 'checkRoutingV2Equipment'
+  }[stage];
+  return `
+    <div class="task-actions">
+      <button class="btn-submit" type="button" onclick="${fn}()">${label}</button>
+    </div>
+    <div class="task-feedback" id="routing-v2-feedback-${stage}"></div>
   `;
 }
 
@@ -534,6 +758,31 @@ function checkRoutingTaskV2Final() {
     ...messagesForFinal('Оборудование', equipment)
   ];
 
+  const review = {
+    total,
+    max: 20,
+    breakdown: [
+      { label: 'Сети', score: networks.score, max: networks.max },
+      { label: 'Таблицы', score: tables.score, max: tables.max },
+      { label: 'Оборудование', score: equipment.score, max: equipment.max }
+    ],
+    messages,
+    solutionHtml: renderRoutingV2Solution()
+  };
+
+  if (routingTaskV2.examMode && typeof finishExamFromTask === 'function') {
+    if (routingTaskV2.saved) {
+      if (typeof showExamResultScreen === 'function') showExamResultScreen();
+      return;
+    }
+
+    finishExamFromTask(total, review);
+    routingTaskV2.saved = true;
+    routingTaskV2.dirty = false;
+    if (typeof showExamResultScreen === 'function') showExamResultScreen();
+    return;
+  }
+
   const final = {
     ok: networks.ok && tables.ok && equipment.ok,
     score: total,
@@ -546,7 +795,7 @@ function checkRoutingTaskV2Final() {
         ${scoreTile('Таблицы', tables.score, tables.max)}
         ${scoreTile('Оборудование', equipment.score, equipment.max)}
       </div>
-      ${renderRoutingV2Solution()}
+      ${review.solutionHtml}
     `
   };
 
@@ -592,25 +841,32 @@ function evaluateRoutingV2Networks() {
 }
 
 function evaluateRoutingV2Tables() {
-  const routerResults = ROUTING_V2_DATA.routers.map(router => evaluateRoutingV2Router(router));
+  const routerResults = routingTaskV2.routers.map(router => evaluateRoutingV2Router(router));
   const matched = routerResults.reduce((sum, item) => sum + item.matched, 0);
   const expected = routerResults.reduce((sum, item) => sum + item.expected, 0);
+  const extra = routerResults.reduce((sum, item) => sum + item.extra.length, 0);
   const messages = [];
 
   routerResults.forEach(item => {
-    if (item.matched === item.expected) return;
-    messages.push(`${item.router}: совпало ${item.matched}/${item.expected}.`);
-    item.missing.slice(0, 6).forEach(route => {
-      messages.push(`${item.router}: не хватает ${formatRoutingV2Route(route)}.`);
-    });
-    if (item.missing.length > 6) {
-      messages.push(`${item.router}: ещё ${item.missing.length - 6} строк не совпало.`);
+    if (item.matched !== item.expected) {
+      messages.push(`${item.router}: совпало ${item.matched}/${item.expected}.`);
+      item.missing.slice(0, 6).forEach(route => {
+        messages.push(`${item.router}: не хватает ${formatRoutingV2Route(route)}.`);
+      });
+      if (item.missing.length > 6) {
+        messages.push(`${item.router}: ещё ${item.missing.length - 6} строк не совпало.`);
+      }
+    }
+    if (item.extra.length) {
+      messages.push(`${item.router}: лишних или неверных строк: ${item.extra.length}.`);
     }
   });
 
+  const score = Math.max(0, round1(matched * 12 / expected - Math.min(extra, 6) * 0.5));
+
   return {
-    ok: matched === expected,
-    score: round1(matched * 12 / expected),
+    ok: matched === expected && extra === 0,
+    score,
     max: 12,
     messages: messages.length ? messages : ['Все таблицы маршрутизации заполнены верно.']
   };
@@ -618,7 +874,7 @@ function evaluateRoutingV2Tables() {
 
 function evaluateRoutingV2Router(router) {
   const expectedRows = routingTaskV2.tables[router];
-  const userRows = expectedRows.map((_, index) => readRoutingV2RouteRow(router, index));
+  const userRows = readRoutingV2RouteRows(router);
   const used = new Set();
   const missing = [];
   let matched = 0;
@@ -635,19 +891,28 @@ function evaluateRoutingV2Router(router) {
     }
   });
 
+  const extra = userRows.filter((row, index) => !used.has(index));
+
   return {
     router,
     matched,
     expected: expectedRows.length,
-    missing
+    missing,
+    extra
   };
+}
+
+function readRoutingV2RouteRows(router) {
+  return [...document.querySelectorAll(`tr[data-routing-v2-router="${router}"]`)]
+    .map(row => readRoutingV2RouteRow(router, row.dataset.routingV2Index))
+    .filter(row => !row.empty);
 }
 
 function evaluateRoutingV2Equipment() {
   const active = routingV2NormalizeText(document.getElementById('routing-v2-equipment-active')?.value || '');
   const passive = routingV2NormalizeText(document.getElementById('routing-v2-equipment-passive')?.value || '');
   const groups = [
-    { label: 'активное: маршрутизаторы R1-R4', text: active, pattern: /(маршрутиз|роутер|router|r1|r2|r3|r4)/ },
+    { label: 'активное: маршрутизаторы схемы', text: active, pattern: /(маршрутиз|роутер|router|r1|r2|r3|r4)/ },
     { label: 'активное: коммутаторы в LAN-сегментах', text: active, pattern: /(коммутат|switch|свитч)/ },
     { label: 'активное: конечные узлы или сетевые адаптеры', text: active, pattern: /(пк|компьютер|хост|узл|сервер|сетев.*адаптер|nic)/ },
     { label: 'пассивное: витая пара или кабель Cat5e/Cat6', text: passive, pattern: /(витая\s+пара|кабель|cat\s?5e|cat\s?6|1000base-t)/ },
@@ -750,9 +1015,9 @@ function renderRoutingV2Solution() {
     <div class="routing-v2-solution">
       <h3>Эталонный разбор</h3>
       ${renderRoutingV2SolutionNetworks()}
-      ${ROUTING_V2_DATA.routers.map(router => renderRoutingV2SolutionTable(router)).join('')}
+      ${routingTaskV2.routers.map(router => renderRoutingV2SolutionTable(router)).join('')}
       <div class="task-explain">
-        <strong>Оборудование:</strong> активное - маршрутизаторы R1-R4, коммутаторы в LAN1-LAN3, конечные узлы/сетевые адаптеры. Пассивное - витая пара Cat5e/Cat6 для 1000Base-T, RJ-45, розетки, патч-корды, патч-панели, кроссовое и кабельные каналы.
+        <strong>Оборудование:</strong> активное - маршрутизаторы ${routingTaskV2.routers.join(', ')}, коммутаторы в LAN-сегментах, конечные узлы/сетевые адаптеры. Пассивное - витая пара Cat5e/Cat6 для 1000Base-T, RJ-45, розетки, патч-корды, патч-панели, кроссовое и кабельные каналы.
       </div>
     </div>
   `;
@@ -817,7 +1082,7 @@ function saveRoutingTaskV2Result(points) {
     },
     date: Date.now(),
     modeId: 'routing-task-v2',
-    modeName: 'Тренажёр v2: таблицы маршрутизации',
+    modeName: `Тренажёр v2: ${routingTaskV2.templateTitle}`,
     completed: true
   });
   if (typeof renderHistoryTable === 'function') renderHistoryTable();

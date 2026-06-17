@@ -113,7 +113,7 @@ body::before {
 
 .mode-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: .75rem;
   margin: -0.6rem auto 1.6rem;
   max-width: 860px;
@@ -1343,6 +1343,8 @@ body::before {
 .routing-v2-diagram {
   margin: 1rem 0;
   overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
   border: 1px solid rgba(0,212,255,.22);
   border-radius: var(--radius);
   background:
@@ -1355,7 +1357,7 @@ body::before {
 .routing-v2-diagram svg {
   display: block;
   width: 100%;
-  min-width: 820px;
+  min-width: 980px;
   height: auto;
 }
 
@@ -1365,7 +1367,7 @@ body::before {
   fill: none;
 }
 
-#routing-v2-arrow path {
+[id^="routing-v2-arrow-"] path {
   fill: var(--accent);
 }
 
@@ -1399,9 +1401,17 @@ body::before {
 .routing-v2-cloud .routing-v2-cloud-ip,
 .routing-v2-ip {
   fill: var(--text);
+  stroke: #070d19;
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
   font-family: var(--mono);
   font-size: 15px;
   font-weight: 700;
+}
+
+.routing-v2-labels {
+  pointer-events: none;
 }
 
 .routing-v2-muted {
@@ -1450,6 +1460,13 @@ body::before {
   font-size: .75rem;
 }
 
+.routing-v2-row-actions {
+  display: flex;
+  justify-content: flex-start;
+  padding: .7rem .85rem .85rem;
+  border-top: 1px solid rgba(31,45,69,.65);
+}
+
 .routing-v2-route-table {
   min-width: 760px;
 }
@@ -1468,6 +1485,39 @@ body::before {
 
 .routing-v2-input {
   min-width: 80px;
+}
+
+.routing-v2-empty-row td {
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: .82rem;
+  text-align: center;
+  padding: .9rem;
+}
+
+.routing-v2-next-cell {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) 34px;
+  gap: .45rem;
+  align-items: center;
+}
+
+.routing-v2-remove-row {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255,77,106,.35);
+  border-radius: var(--radius);
+  background: rgba(255,77,106,.08);
+  color: var(--red);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+
+.routing-v2-remove-row:hover {
+  border-color: var(--red);
+  background: rgba(255,77,106,.16);
 }
 
 .routing-v2-equipment-grid {
