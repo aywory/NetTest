@@ -21,6 +21,9 @@ for (const template of templates) {
   validateUserTableScoring(task);
 }
 
+validateNetworkBoundaryRejection();
+validateEquipmentScoring();
+
 console.log(`routing_task_v2: ${templates.length} templates ok, ${checkedRoutes} route rows checked`);
 
 function validateTaskShape(task) {
@@ -161,4 +164,72 @@ function validateUserTableScoring(task) {
   const result = vm.runInContext('routingTaskV2 = __task; evaluateRoutingV2Tables()', ctx);
   assert.strictEqual(result.ok, true, `${task.templateId}: expected user table answer to be accepted`);
   assert.strictEqual(result.score, 12, `${task.templateId}: expected full table score`);
+}
+
+function validateNetworkBoundaryRejection() {
+  const template = templates.find(item => item.id === 'exam-guide-example');
+  assert(template, 'Missing exam-guide-example template');
+
+  const task = ctx.buildRoutingTaskV2(template);
+  const values = {};
+  for (const seg of task.segments) {
+    values[`routing-v2-net-${seg.id}-network`] = ctx.intToIp(seg.network);
+    values[`routing-v2-net-${seg.id}-mask`] = `/${seg.prefix}`;
+  }
+
+  values['routing-v2-net-lan1-network'] = '10.4.4.36';
+  values['routing-v2-net-lan1-mask'] = '/27';
+
+  ctx.__task = task;
+  setDocumentValues(values);
+  const result = vm.runInContext('routingTaskV2 = __task; evaluateRoutingV2Networks()', ctx);
+
+  assert.strictEqual(result.ok, false, '10.4.4.36/27 must not be accepted as a network address');
+  assert(result.score < 5, 'misaligned network address must reduce network score');
+  assert(
+    result.messages.some(message =>
+      message.includes('не является адресом сети') && message.includes('10.4.4.32')
+    ),
+    'misaligned network message should explain the correct block boundary'
+  );
+}
+
+function validateEquipmentScoring() {
+  const task = ctx.buildRoutingTaskV2(templates[0]);
+
+  let result = evaluateEquipmentAnswer(
+    task,
+    'Маршрутизаторы R1-R4, коммутаторы в LAN',
+    'витая пара Cat5e, RJ-45, патч-панели'
+  );
+  assert.strictEqual(result.ok, true, 'strict active/passive equipment answer should be accepted');
+  assert.strictEqual(result.score, 3, 'strict equipment answer should receive full score');
+
+  result = evaluateEquipmentAnswer(
+    task,
+    'маршрутизаторы и коммутаторы',
+    'ПК, хосты LAN'
+  );
+  assert.strictEqual(result.ok, true, 'teacher-style passive PCs answer should be accepted');
+  assert.strictEqual(result.score, 3, 'teacher-style passive PCs answer should receive full score');
+}
+
+function evaluateEquipmentAnswer(task, active, passive) {
+  ctx.__task = task;
+  setDocumentValues({
+    'routing-v2-equipment-active': active,
+    'routing-v2-equipment-passive': passive
+  });
+  return vm.runInContext('routingTaskV2 = __task; evaluateRoutingV2Equipment()', ctx);
+}
+
+function setDocumentValues(values) {
+  ctx.document = {
+    getElementById(id) {
+      return { value: values[id] || '' };
+    },
+    querySelectorAll() {
+      return [];
+    }
+  };
 }

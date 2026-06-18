@@ -26,7 +26,7 @@ const TEST_MODES = {
   labs: {
     title: 'Лабы 1-8',
     description: 'Практика по пройденным лабораторным',
-    filter: q => q.topic !== 'Термины и определения' && q.pack !== 'supplement'
+    filter: q => q.topic !== 'Термины и определения' && q.pack !== 'supplement' && q.pack !== 'topology_deep' && q.pack !== 'address_classes_deep'
   },
   terms: {
     title: 'Термины',
@@ -37,6 +37,16 @@ const TEST_MODES = {
     title: 'Дополнение',
     description: 'Темы и формулировки, всплывшие после экзамена',
     filter: q => q.pack === 'supplement'
+  },
+  topologies: {
+    title: 'Топологии',
+    description: 'Шина, звезда, кольцо, mesh, дерево, STP, Wi-Fi и подвохи',
+    filter: q => q.pack === 'topology_deep'
+  },
+  address_classes: {
+    title: 'Классы IPv4',
+    description: 'A/B/C/D/E, private, reserved, CIDR и адресные подвохи',
+    filter: q => q.pack === 'address_classes_deep'
   },
   exam: {
     title: 'Экзамен',

@@ -684,6 +684,7 @@ function renderRoutingV2EquipmentStage() {
   return `
     <div class="task-card">
       <h3>3. Опиши оборудование для сегментов 1000Base-T</h3>
+      ${routingTaskV2.examMode ? '' : `<p class="routing-v2-muted">Без лишней детализации: активное - то, что реально работает с трафиком; пассивное - кабельная часть. Если преподаватель относит ПК к пассивным/оконечным узлам, такой ответ тоже принимается.</p>`}
       <div class="routing-v2-equipment-grid">
         <label>
           <span>Активное оборудование</span>
@@ -819,6 +820,12 @@ function evaluateRoutingV2Networks() {
       return;
     }
 
+    const alignedNetwork = networkOf(user.network, user.prefix);
+    if (alignedNetwork !== user.network) {
+      messages.push(`${seg.title}: ${intToIp(user.network)} не является адресом сети для ${prefixLabel(user.prefix)}. Для этой маски блок начинается с ${intToIp(alignedNetwork)}.`);
+      return;
+    }
+
     if (user.network !== seg.network) {
       messages.push(`${seg.title}: нужен адрес сети ${routingV2SubnetLabel(seg)}, а не ${intToIp(user.network)}/${user.prefix}.`);
       return;
@@ -911,15 +918,14 @@ function readRoutingV2RouteRows(router) {
 function evaluateRoutingV2Equipment() {
   const active = routingV2NormalizeText(document.getElementById('routing-v2-equipment-active')?.value || '');
   const passive = routingV2NormalizeText(document.getElementById('routing-v2-equipment-passive')?.value || '');
+  const passiveHasCable = /(витая\s+пара|кабель|cat\s?5e|cat\s?6|1000base-t|rj-?45|розет|коннектор|разъем|разъём|патч|patch|панел|кросс|стоек|стоик|шкаф|канал)/.test(passive);
+  const passiveHasHosts = /(пк|компьютер|хост|узл|сервер|рабоч.*станц|сетев.*адаптер|nic)/.test(passive);
   const groups = [
-    { label: 'активное: маршрутизаторы схемы', text: active, pattern: /(маршрутиз|роутер|router|r1|r2|r3|r4)/ },
-    { label: 'активное: коммутаторы в LAN-сегментах', text: active, pattern: /(коммутат|switch|свитч)/ },
-    { label: 'активное: конечные узлы или сетевые адаптеры', text: active, pattern: /(пк|компьютер|хост|узл|сервер|сетев.*адаптер|nic)/ },
-    { label: 'пассивное: витая пара или кабель Cat5e/Cat6', text: passive, pattern: /(витая\s+пара|кабель|cat\s?5e|cat\s?6|1000base-t)/ },
-    { label: 'пассивное: RJ-45, розетки или коннекторы', text: passive, pattern: /(rj-?45|розет|коннектор|разъем|разъём)/ },
-    { label: 'пассивное: патч-корды, патч-панели, кросс или кабельные каналы', text: passive, pattern: /(патч|patch|панел|кросс|стоек|стоик|шкаф|канал)/ }
+    { label: 'активное: маршрутизаторы схемы', ok: /(маршрутиз|роутер|router|r1|r2|r3|r4)/.test(active) },
+    { label: 'активное: коммутаторы в LAN-сегментах', ok: /(коммутат|switch|свитч)/.test(active) },
+    { label: 'пассивное: кабельная часть 1000Base-T или ПК/хосты по трактовке преподавателя', ok: passiveHasCable || passiveHasHosts }
   ];
-  const missing = groups.filter(group => !group.pattern.test(group.text));
+  const missing = groups.filter(group => !group.ok);
   const correct = groups.length - missing.length;
 
   return {
@@ -1017,7 +1023,7 @@ function renderRoutingV2Solution() {
       ${renderRoutingV2SolutionNetworks()}
       ${routingTaskV2.routers.map(router => renderRoutingV2SolutionTable(router)).join('')}
       <div class="task-explain">
-        <strong>Оборудование:</strong> активное - маршрутизаторы ${routingTaskV2.routers.join(', ')}, коммутаторы в LAN-сегментах, конечные узлы/сетевые адаптеры. Пассивное - витая пара Cat5e/Cat6 для 1000Base-T, RJ-45, розетки, патч-корды, патч-панели, кроссовое и кабельные каналы.
+        <strong>Оборудование:</strong> активное - маршрутизаторы ${routingTaskV2.routers.join(', ')} и коммутаторы в LAN-сегментах. Пассивное по строгой сетевой терминологии - кабельная система 1000Base-T: витая пара Cat5e/Cat6, RJ-45, патч-корды, розетки, патч-панели. Если преподаватель называет ПК пассивными, допиши их как ПК/хосты LAN или оконечные узлы, но не вместо маршрутизаторов и коммутаторов.
       </div>
     </div>
   `;
